@@ -164,10 +164,13 @@ textarea.inp{min-height:72px;resize:vertical}
 .rq .qt{display:flex;gap:8px;align-items:flex-start;justify-content:space-between;margin-bottom:10px}
 .rq .qt b{font-weight:600;font-size:15.5px;line-height:1.3}
 .rq .qt small{font-size:12.5px;color:var(--faint);white-space:nowrap;padding-top:2px;font-variant-numeric:tabular-nums}
-.yn{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.yn button{height:52px;border-radius:12px;background:var(--card2);border:1.5px solid var(--line);color:var(--muted);font-weight:650;font-size:15px;display:flex;align-items:center;justify-content:center;gap:7px;transition:transform .08s}
+.yn{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}
+.yn button{height:62px;border-radius:12px;background:var(--card2);border:1.5px solid var(--line);color:var(--muted);font-weight:650;font-size:13px;line-height:1.1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:0 4px;text-align:center;transition:transform .08s}
+.yn button.on.na{background:var(--muted);border-color:var(--muted);color:var(--oncolor)}
+.rq.na{border-color:var(--faint);border-style:dashed}.rq.na .qt b{color:var(--muted)}
 .yn button:active{transform:scale(.97)}
 .yn button svg{width:19px;height:19px;stroke-width:2.6}
+@media (min-width:480px){.yn button{flex-direction:row;height:52px;font-size:14.5px;gap:6px}}
 .yn button.on.y{background:var(--ok);border-color:var(--ok);color:var(--oncolor)}
 .yn button.on.n{background:var(--bad);border-color:var(--bad);color:var(--oncolor)}
 .allbar{display:flex;align-items:center;gap:8px;margin:18px 0 4px}
@@ -184,6 +187,42 @@ textarea.inp{min-height:72px;resize:vertical}
 .dsum b{font-size:30px;font-weight:750;font-variant-numeric:tabular-nums}
 #toast{position:fixed;left:50%;bottom:calc(98px + env(safe-area-inset-bottom));transform:translate(-50%,20px);z-index:80;background:var(--text);color:var(--bg);padding:10px 16px;border-radius:12px;font-size:14px;max-width:calc(100vw - 32px);opacity:0;pointer-events:none;transition:all .2s;white-space:pre-line}
 #toast.show{opacity:1;transform:translate(-50%,0)}
+#toast.party{background:linear-gradient(135deg,#f59e0b,#fbbf24);color:#1b1300;font-weight:650;text-align:center;box-shadow:0 10px 30px rgba(245,158,11,.35)}
+#toast.party.show{animation:pop .45s ease-out}
+@keyframes pop{0%{transform:translate(-50%,20px) scale(.9)}60%{transform:translate(-50%,-4px) scale(1.04)}100%{transform:translate(-50%,0) scale(1)}}
+/* v2 */
+:root,html[data-theme="dark"]{--gold:#fbbf24;--goldbg:rgba(251,191,36,.15);--ntc:#a78bfa;--ntbg:rgba(167,139,250,.15)}
+html[data-theme="light"]{--gold:#d97706;--goldbg:rgba(217,119,6,.12);--ntc:#7c3aed;--ntbg:rgba(124,58,237,.1)}
+.badge.gold{background:var(--goldbg);color:var(--gold)}.badge.nt{background:var(--ntbg);color:var(--ntc)}
+.badge.sm{width:30px;height:30px;margin-left:8px}
+.trow.bonus{border-color:color-mix(in srgb,var(--gold) 45%,var(--line))}
+.bar.gold i{background:var(--gold)}
+.ctitle svg{width:16px;height:16px;color:var(--gold)}
+.lnk{color:var(--accent);font-weight:600;font-size:13px;padding:2px 4px}
+.bons{display:flex;flex-direction:column;gap:14px}
+.bon .bt{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}
+.bon .bt b{font-weight:600;font-size:14.5px;min-width:0;overflow-wrap:anywhere}.bon .bt span{font-weight:700;font-size:13.5px;white-space:nowrap}
+.bon .bc{font-size:12.5px;color:var(--muted);font-variant-numeric:tabular-nums;margin-top:2px;white-space:normal;overflow-wrap:anywhere}
+.bon .bc b{color:var(--text);font-weight:700}
+.bon .bar{display:block;width:100%;height:7px;margin:6px 0 0}
+.nw{white-space:nowrap}
+.bon small{display:block;font-size:12px;color:var(--faint);margin-top:2px}
+.pill{display:inline-block;font-size:11.5px;font-weight:700;padding:1px 7px;border-radius:99px;margin-left:7px;vertical-align:1px;background:var(--card2);color:var(--muted)}
+.pill.win{background:var(--okbg);color:var(--ok)}.pill.loss{background:var(--badbg);color:var(--bad)}
+.seg2.res button.on.win{color:var(--ok)}.seg2.res button.on.loss{color:var(--bad)}
+.seg2.rsub{margin:6px 0 4px}
+.seg2.rsub button{display:flex;align-items:center;justify-content:center;gap:6px}
+.seg2.rsub svg{width:16px;height:16px;color:var(--gold)}
+.seg2.rsub i{font-style:normal;font-size:12px;color:var(--faint)}
+.pick{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;margin-top:10px;min-height:68px}
+.pick:hover{border-color:var(--faint)}
+.pick .ht b{font-size:16px}
+.btypes{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.btypes button{min-height:46px;padding:6px 10px;border-radius:12px;background:var(--card2);color:var(--muted);font-weight:600;font-size:13.5px;border:1px solid var(--line);line-height:1.2}
+.btypes button.on{background:var(--accent);color:var(--on-accent);border-color:transparent}
+.warn{margin:8px 0 0;padding:10px 12px;border-radius:12px;background:var(--badbg);color:var(--bad);font-size:13.5px;font-weight:600}
+.warn.soft{background:var(--card2);color:var(--muted);font-weight:500}
+.warn[hidden]{display:none}
 @media (min-width:640px){
   .topbar{padding-left:20px;padding-right:20px}
   main{padding-left:20px;padding-right:20px}
@@ -213,8 +252,8 @@ textarea.inp{min-height:72px;resize:vertical}
 (function(){
 var KEY = "regelkonto";
 var UIKEY = "regelkonto-ui";
-var SCHEMA = 1;
-var VERSION = "1.0";
+var SCHEMA = 2;
+var VERSION = "2.0";
 var CATS = ["Vor dem Trade", "Im Trade", "Nach dem Trade", "Allgemein"];
 var WDS = ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"];
 
@@ -228,6 +267,8 @@ var UIC = {
   wallet:'<path d="M20 7V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h13a2 2 0 0 0 2-2v-2"/><path d="M21 7H15a3 3 0 0 0 0 6h6Z"/><circle cx="15.5" cy="10" r=".6" fill="currentColor"/>',
   list:'<path d="M9 6h12M9 12h12M9 18h12"/><path d="m3 6 1 1 2-2M3 12l1 1 2-2M3 18l1 1 2-2"/>',
   coin:'<circle cx="12" cy="12" r="9"/><path d="M12 7v10M9 9.5h4.5a1.8 1.8 0 0 1 0 3.5h-3a1.8 1.8 0 0 0 0 3.5H15"/>',
+  star:'<path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9Z"/>',
+  moon:'<path d="M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5Z"/>',
   bulb:'<path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.3 1 2.3h6c0-1 .4-1.8 1-2.3A7 7 0 0 0 12 2Z"/>'
 };
 function svg(inner, cls){ return '<svg' + (cls ? ' class="' + cls + '"' : '') + ' viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + inner + '</svg>'; }
@@ -254,7 +295,24 @@ function dayLabel(ts){ var d = new Date(ts); return WDS[d.getDay()] + ", " + fmt
 function pct(p){ return p == null ? "–" : Math.round(p * 100) + " %"; }
 
 /* ---------- Daten ---------- */
-var S = null, UI = {tab:"ov", theme:"dark"};
+var S = null, UI = {tab:"ov", theme:"dark", rsub:"rules"};
+var BTYPES = {
+  clean:{label:"Regelkonform in Folge", short:"regelkonforme Trades in Folge", unit:"Trades", hint:"Zählt Trades ohne „Gebrochen“. „Nicht anwendbar“ ist ok. Ein Trade mit Regelbruch beendet die Serie, Kein-Trade-Tage unterbrechen sie nicht."},
+  win:{label:"Gewinne in Folge", short:"Gewinn-Trades in Folge", unit:"Trades", hint:"Zählt Trades mit Ergebnis „Gewinn“. Verlust oder Break-even beendet die Serie. Trades ohne Ergebnis werden übersprungen."},
+  notrade:{label:"Kein-Trade-Tage in Folge", short:"Kein-Trade-Tage in Folge", unit:"Tage", hint:"Zählt Kein-Trade-Tage. Jeder Trade beendet die Serie."},
+  cleantotal:{label:"Regelkonform insgesamt", short:"regelkonforme Trades insgesamt", unit:"Trades", hint:"Zählt jeden Trade ohne Regelbruch, auch mit Unterbrechungen."}
+};
+var BORDER = ["clean", "win", "notrade", "cleantotal"];
+var RES = {win:"Gewinn", loss:"Verlust", be:"Break-even"};
+function dayKey(ts){ var d = new Date(ts); return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate()); }
+function fromDayKey(s, h){ var m = /^(\d{4})-(\d\d)-(\d\d)$/.exec(s || ""); if(!m) return null; return new Date(+m[1], +m[2] - 1, +m[3], h || 0, 0).getTime(); }
+function dayStart(ts){ var d = new Date(ts); d.setHours(0, 0, 0, 0); return d.getTime(); }
+function autoName(type, n){ return n + " " + BTYPES[type].short; }
+function defBonus(since){
+  var now = Date.now();
+  return [{id:uid("x") + "0", name:"3 Gewinn-Trades in Folge", type:"win", n:3, amount:25, active:true, order:1, since:since, createdAt:now},
+          {id:uid("x") + "1", name:"10 regelkonforme Trades in Folge", type:"clean", n:10, amount:100, active:true, order:2, since:since, createdAt:now}];
+}
 function blank(){
   var now = Date.now();
   var def = [
@@ -263,47 +321,111 @@ function blank(){
     ["Trade vollständig vorbereitet (Einstieg, Stop, Ziel, Grund notiert)", "Vor dem Trade"],
     ["Ohne Ablenkung gehandelt", "Im Trade"]
   ];
-  return {schema:SCHEMA, settings:{start:1000, defPlus:5, defMinus:10},
+  return {schema:SCHEMA, settings:{start:1000, defPlus:5, defMinus:10, noTrade:50},
     rules:def.map(function(r, i){ return {id:uid("r") + i, title:r[0], cat:r[1], plus:5, minus:10, active:true, order:i + 1, createdAt:now}; }),
-    trades:[], bookings:[], meta:{lastExport:null, lastImport:null, created:now}};
+    trades:[], bookings:[], notrade:[], bonusRules:defBonus(0), awards:[], meta:{lastExport:null, lastImport:null, created:now}};
 }
 function normRule(r, i){
   return {id:String(r.id || uid("r")), title:String(r.title || "Regel").slice(0, 200), cat:CATS.indexOf(r.cat) >= 0 ? r.cat : "Allgemein",
     plus:num(r.plus, 5, 0, 100000), minus:num(r.minus, 10, 0, 100000), active:r.active !== false, order:+r.order || i + 1, createdAt:+r.createdAt || Date.now()};
 }
 function normTrade(t){
-  var items = (Array.isArray(t.items) ? t.items : []).map(function(x){ return {ruleId:String(x.ruleId || ""), title:String(x.title || ""), cat:CATS.indexOf(x.cat) >= 0 ? x.cat : "Allgemein", plus:num(x.plus, 0, 0, 100000), minus:num(x.minus, 0, 0, 100000), ok:x.ok === true ? true : x.ok === false ? false : null}; });
-  var o = {id:String(t.id || uid("t")), ts:+t.ts || Date.now(), instrument:String(t.instrument || "").slice(0, 60), note:String(t.note || "").slice(0, 2000), items:items, updatedAt:+t.updatedAt || Date.now()};
+  var items = (Array.isArray(t.items) ? t.items : []).map(function(x){ return {ruleId:String(x.ruleId || ""), title:String(x.title || ""), cat:CATS.indexOf(x.cat) >= 0 ? x.cat : "Allgemein", plus:num(x.plus, 0, 0, 100000), minus:num(x.minus, 0, 0, 100000), ok:x.ok === true ? true : x.ok === false ? false : x.ok === "na" ? "na" : null}; });
+  var o = {id:String(t.id || uid("t")), ts:+t.ts || Date.now(), instrument:String(t.instrument || "").slice(0, 60), note:String(t.note || "").slice(0, 2000), items:items, result:RES[t.result] ? t.result : null, updatedAt:+t.updatedAt || Date.now()};
   o.total = tradeTotal(o); return o;
 }
 function normBooking(b){ return {id:String(b.id || uid("b")), ts:+b.ts || Date.now(), amount:num(b.amount, 0, -10000000, 10000000), note:String(b.note || "").slice(0, 300)}; }
+function normNoTrade(n){
+  var day = /^\d{4}-\d\d-\d\d$/.test(n.day || "") ? n.day : dayKey(+n.ts || Date.now());
+  return {id:String(n.id || uid("n")), day:day, ts:fromDayKey(day, 12), note:String(n.note || "").slice(0, 300), amount:num(n.amount, 50, 0, 10000000), createdAt:+n.createdAt || Date.now()};
+}
+function normBonusRule(b, i){
+  var type = BORDER.indexOf(b.type) >= 0 ? b.type : "clean", n = Math.round(num(b.n, 3, 1, 1000));
+  return {id:String(b.id || uid("x")), name:String(b.name || autoName(type, n)).slice(0, 120), type:type, n:n, amount:num(b.amount, 0, 0, 10000000),
+    active:b.active !== false, order:+b.order || i + 1, since:+b.since || 0, createdAt:+b.createdAt || Date.now()};
+}
+function normAward(a){
+  return {key:String(a.key), bonusId:String(a.bonusId || ""), triggerId:String(a.triggerId || ""), ts:+a.ts || 0, count:+a.count || 0, n:+a.n || 0,
+    name:String(a.name || "Bonus"), amount:num(a.amount, 0, 0, 10000000), type:BORDER.indexOf(a.type) >= 0 ? a.type : "clean", frozen:!!a.frozen};
+}
 function migrate(d){
   if(!d || typeof d !== "object" || !Array.isArray(d.rules) || !Array.isArray(d.trades)) throw new Error("Unbekanntes Format");
-  var st = d.settings || {};
-  return {schema:SCHEMA, settings:{start:num(st.start, 1000, -10000000, 10000000), defPlus:num(st.defPlus, 5, 0, 100000), defMinus:num(st.defMinus, 10, 0, 100000)},
-    rules:d.rules.map(normRule), trades:d.trades.map(normTrade), bookings:(d.bookings || []).map(normBooking), meta:d.meta && typeof d.meta === "object" ? {lastExport:d.meta.lastExport || null, lastImport:d.meta.lastImport || null, created:d.meta.created || Date.now()} : {lastExport:null, lastImport:null, created:Date.now()}};
+  var st = d.settings || {}, days = {};
+  /* v1 → v2: Regeln, Trades und Buchungen bleiben unverändert. Vorbelegte Bonus-Regeln zählen erst ab jetzt, damit sich der Kontostand nicht ändert. */
+  var nt = (Array.isArray(d.notrade) ? d.notrade : []).map(normNoTrade).filter(function(n){ if(days[n.day]) return false; days[n.day] = 1; return true; });
+  return {schema:SCHEMA, settings:{start:num(st.start, 1000, -10000000, 10000000), defPlus:num(st.defPlus, 5, 0, 100000), defMinus:num(st.defMinus, 10, 0, 100000), noTrade:num(st.noTrade, 50, 0, 10000000)},
+    rules:d.rules.map(normRule), trades:d.trades.map(normTrade), bookings:(d.bookings || []).map(normBooking),
+    notrade:nt, bonusRules:Array.isArray(d.bonusRules) ? d.bonusRules.map(normBonusRule) : defBonus(Date.now()),
+    awards:(Array.isArray(d.awards) ? d.awards : []).map(normAward), meta:d.meta && typeof d.meta === "object" ? {lastExport:d.meta.lastExport || null, lastImport:d.meta.lastImport || null, created:d.meta.created || Date.now()} : {lastExport:null, lastImport:null, created:Date.now()}};
 }
 function load(){
   var raw = null; try { raw = localStorage.getItem(KEY); } catch(e) {}
-  if(raw){ try { S = migrate(JSON.parse(raw)); } catch(e) { S = blank(); try { localStorage.setItem(KEY + "-defekt-" + Date.now(), raw); } catch(x) {} } }
+  if(raw){ try { var old = JSON.parse(raw); S = migrate(old); recalcBonuses(); if(+old.schema !== SCHEMA){ try { localStorage.setItem(KEY + "-v" + (old.schema || 1) + "-backup", raw); } catch(x) {} save(); } } catch(e) { S = blank(); try { localStorage.setItem(KEY + "-defekt-" + Date.now(), raw); } catch(x) {} } }
   else { S = blank(); save(); }
-  try { var u = JSON.parse(localStorage.getItem(UIKEY) || "{}"); if(u.tab) UI.tab = u.tab; if(u.theme) UI.theme = u.theme; } catch(e) {}
+  try { var u = JSON.parse(localStorage.getItem(UIKEY) || "{}"); if(u.tab) UI.tab = u.tab; if(u.theme) UI.theme = u.theme; if(u.rsub) UI.rsub = u.rsub; } catch(e) {}
   if(["ov", "hist", "rules"].indexOf(UI.tab) < 0) UI.tab = "ov";
 }
 function save(){ try { localStorage.setItem(KEY, JSON.stringify(S)); } catch(e) { toast("Speichern fehlgeschlagen: " + e.message); } }
-function saveUI(){ try { localStorage.setItem(UIKEY, JSON.stringify({tab:UI.tab, theme:UI.theme})); } catch(e) {} }
+function saveUI(){ try { localStorage.setItem(UIKEY, JSON.stringify({tab:UI.tab, theme:UI.theme, rsub:UI.rsub})); } catch(e) {} }
 function rules(activeOnly){ return S.rules.filter(function(r){ return !activeOnly || r.active; }).sort(function(a, b){ return a.order - b.order; }); }
 function ruleById(id){ for(var i = 0; i < S.rules.length; i++) if(S.rules[i].id === id) return S.rules[i]; return null; }
 function tradeById(id){ for(var i = 0; i < S.trades.length; i++) if(S.trades[i].id === id) return S.trades[i]; return null; }
+function noTradeById(id){ for(var i = 0; i < S.notrade.length; i++) if(S.notrade[i].id === id) return S.notrade[i]; return null; }
+function bonusById(id){ for(var i = 0; i < S.bonusRules.length; i++) if(S.bonusRules[i].id === id) return S.bonusRules[i]; return null; }
+function awardByKey(k){ for(var i = 0; i < S.awards.length; i++) if(S.awards[i].key === k) return S.awards[i]; return null; }
+function bonusRules(activeOnly){ return S.bonusRules.filter(function(b){ return !activeOnly || b.active; }).sort(function(a, b){ return a.order - b.order; }); }
 function bookingById(id){ for(var i = 0; i < S.bookings.length; i++) if(S.bookings[i].id === id) return S.bookings[i]; return null; }
 function tradeTotal(t){ return r2(t.items.reduce(function(s, x){ return s + (x.ok === true ? x.plus : x.ok === false ? -x.minus : 0); }, 0)); }
 function brokenOf(t){ return t.items.filter(function(x){ return x.ok === false; }); }
 function tradesSorted(){ return S.trades.slice().sort(function(a, b){ return b.ts - a.ts; }); }
+var EORD = {t:0, n:1, b:2, a:3};
 function events(){
-  return S.trades.map(function(t){ return {ts:t.ts, v:t.total, type:"t", id:t.id}; }).concat(S.bookings.map(function(b){ return {ts:b.ts, v:b.amount, type:"b", id:b.id}; })).sort(function(a, b){ return a.ts - b.ts; });
+  return S.trades.map(function(t){ return {ts:t.ts, v:t.total, type:"t", id:t.id}; })
+    .concat(S.bookings.map(function(b){ return {ts:b.ts, v:b.amount, type:"b", id:b.id}; }))
+    .concat(S.notrade.map(function(n){ return {ts:n.ts, v:n.amount, type:"n", id:n.id}; }))
+    .concat(S.awards.map(function(a){ return {ts:a.ts, v:a.amount, type:"a", id:a.key}; }))
+    .sort(function(a, b){ return a.ts - b.ts || EORD[a.type] - EORD[b.type]; });
 }
+/* ---------- Boni: werden deterministisch aus den Einträgen berechnet ---------- */
+function timeline(){
+  return S.trades.map(function(t){ return {k:"t", ts:t.ts, id:t.id, t:t}; }).concat(S.notrade.map(function(n){ return {k:"n", ts:n.ts, id:n.id, n:n}; }))
+    .sort(function(a, b){ return a.ts - b.ts || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0); });
+}
+function isClean(t){ return !brokenOf(t).length; }
+function scanBonus(b, tl){
+  var count = 0, total = 0, aw = [];
+  (tl || timeline()).forEach(function(e){
+    if(e.ts < b.since) return;
+    if(b.type === "clean"){ if(e.k !== "t") return; if(!isClean(e.t)){ count = 0; return; } }
+    else if(b.type === "win"){ if(e.k !== "t" || !e.t.result) return; if(e.t.result !== "win"){ count = 0; return; } }
+    else if(b.type === "notrade"){ if(e.k !== "n"){ count = 0; return; } }
+    else { if(e.k !== "t" || !isClean(e.t)) return; }
+    count++;
+    if(count % b.n === 0){ total++; aw.push({key:b.id + "|" + e.id + "|" + count, bonusId:b.id, triggerId:e.id, ts:e.ts, count:count}); }
+  });
+  return {count:count, awards:aw};
+}
+function recalcBonuses(){
+  var old = {}, frozen = {}, tl = timeline(), fresh = [], added = [];
+  S.awards.forEach(function(a){ old[a.key] = a; if(a.frozen) frozen[a.key] = 1; });
+  bonusRules(true).forEach(function(b){
+    scanBonus(b, tl).awards.forEach(function(a){
+      if(frozen[a.key]) return;
+      var o = old[a.key];
+      if(o){ a.name = o.name; a.amount = o.amount; a.n = o.n; a.type = o.type; }
+      else { a.name = b.name; a.amount = b.amount; a.n = b.n; a.type = b.type; added.push(a); }
+      fresh.push(normAward(a));
+    });
+  });
+  var fk = {}; fresh.forEach(function(a){ fk[a.key] = 1; });
+  var removed = S.awards.filter(function(a){ return !a.frozen && !fk[a.key]; });
+  S.awards = S.awards.filter(function(a){ return a.frozen; }).concat(fresh);
+  return {added:added, removed:removed};
+}
+function freezeAwards(bonusId){ S.awards.forEach(function(a){ if(a.bonusId === bonusId) a.frozen = true; }); }
+function commit(msg){ var r = recalcBonuses(); save(); render(); bonusToast(r, msg); return r; }
 function balance(){ return r2(events().reduce(function(s, e){ return s + e.v; }, S.settings.start)); }
-function ruleQuote(trades){ var k = 0, n = 0; trades.forEach(function(t){ t.items.forEach(function(x){ if(x.ok != null){ n++; if(x.ok) k++; } }); }); return n ? k / n : null; }
+function ruleQuote(trades){ var k = 0, n = 0; trades.forEach(function(t){ t.items.forEach(function(x){ if(x.ok === true || x.ok === false){ n++; if(x.ok === true) k++; } }); }); return n ? k / n : null; }
 function streaks(){
   var ts = tradesSorted(), cur = 0, best = 0, run = 0, i;
   for(i = 0; i < ts.length; i++){ if(brokenOf(ts[i]).length) break; cur++; }
@@ -313,7 +435,7 @@ function streaks(){
 function ranking(){
   var m = {}, order = [];
   S.trades.forEach(function(t){ t.items.forEach(function(x){
-    if(x.ok == null) return;
+    if(x.ok !== true && x.ok !== false) return;
     var k = x.ruleId || x.title;
     if(!m[k]){ m[k] = {key:k, title:x.title, n:0, b:0, last:0}; order.push(k); }
     m[k].n++; if(x.ok === false) m[k].b++;
@@ -336,9 +458,9 @@ function render(){
   $("#sub").textContent = d.toLocaleDateString("de-DE", {weekday:"long", day:"numeric", month:"long"}) + " · virtuelles Konto";
   document.querySelectorAll("#seg [data-tab]").forEach(function(b){
     var t = b.getAttribute("data-tab"), on = t === UI.tab; b.classList.toggle("on", on); b.setAttribute("aria-selected", on);
-    var i = b.querySelector("i"); if(i) i.textContent = t === "hist" ? (S.trades.length || "") : (rules(true).length || "");
+    var i = b.querySelector("i"); if(i) i.textContent = t === "hist" ? ((S.trades.length + S.notrade.length) || "") : (rules(true).length || "");
   });
-  var fab = $(".fab"), lab = UI.tab === "rules" ? "Neue Regel" : "Trade erfassen";
+  var fab = $(".fab"), lab = UI.tab === "rules" ? (UI.rsub === "bonus" ? "Neuer Bonus" : "Neue Regel") : "Neuer Eintrag";
   fab.setAttribute("aria-label", lab); fab.title = lab;
   var v = $("#view");
   v.innerHTML = UI.tab === "hist" ? histHTML() : UI.tab === "rules" ? rulesHTML() : ovHTML();
@@ -377,6 +499,7 @@ function ovHTML(){
     '<div class="kpi"><small>Regel-Quote</small><b id="quote">' + pct(q) + '</b><span class="bar"><i style="width:' + Math.round((q || 0) * 100) + '%"></i></span><em>gesamt</em></div>' +
     '<div class="kpi"><small>Letzte 10</small><b id="quote10">' + pct(q10) + '</b><span class="bar"><i style="width:' + Math.round((q10 || 0) * 100) + '%"></i></span><em>' + Math.min(10, ts.length) + ' Trades</em></div>' +
     '<div class="kpi"><small>Serie</small><b id="streak">' + uic("flame") + st.cur + '</b><em>ohne Regelbruch</em><em>Rekord ' + st.best + '</em></div></div>';
+  h += bonusProgressHTML();
   h += '<div class="card span"><div class="ctitle">Kontostand-Verlauf</div>' + chartHTML() + '</div>';
   var rk = ranking().filter(function(r){ return r.b > 0; }).slice(0, 8);
   h += '<div class="card span"><div class="ctitle">Am häufigsten gebrochen</div>';
@@ -385,26 +508,55 @@ function ovHTML(){
   else h += '<div class="rank" id="ranking">' + rk.map(function(r, i){ return '<div class="rk"><span class="n">' + (i + 1) + '</span><span class="t">' + esc(r.title) + '</span><span class="q"><b class="neg">' + r.b + '×</b> von ' + r.n + ' · ' + pct(r.q) + '</span><span class="bar red"><i style="width:' + Math.round(r.q * 100) + '%"></i></span></div>'; }).join("") + '</div>';
   h += '</div></div>';
   if(!S.trades.length) h += '<button class="btn primary block" data-action="new-trade">' + uic("plus") + ' Ersten Trade erfassen</button>';
-  h += '<p class="hint">Virtuelles Konto, kein echtes Geld. Eingehaltene Regeln schreiben gut, gebrochene buchen ab.</p></div>';
+  h += '<p class="hint">Virtuelles Konto, kein echtes Geld. Eingehaltene Regeln schreiben gut, gebrochene buchen ab, „nicht anwendbar“ zählt 0 €.</p></div>';
   return h;
 }
+function resPill(r){ return r ? '<span class="pill ' + r + '">' + RES[r] + '</span>' : ''; }
 function tradeRowHTML(t){
-  var br = brokenOf(t), open = t.items.filter(function(x){ return x.ok == null; }).length;
-  var sub = (br.length ? '<span class="brk">' + br.length + ' gebrochen: ' + esc(br.map(function(x){ return x.title; }).join(", ")) + '</span>' : '<span class="okt">Alle ' + t.items.length + ' Regeln eingehalten</span>');
-  return '<button class="trow" data-trade="' + esc(t.id) + '"><span class="badge ' + (br.length ? "bad" : "ok") + '">' + uic(br.length ? "x" : "check") + '</span><span class="ht"><b>' + fmtTime(t.ts) + (t.instrument ? ' <span class="dot">·</span> ' + esc(t.instrument) : '') + '</b><small>' + sub + (open ? ' · ' + open + ' offen' : '') + '</small></span><span class="v ' + cls(t.total) + '">' + signed(t.total) + '</span></button>';
+  var br = brokenOf(t), open = t.items.filter(function(x){ return x.ok == null; }).length, na = t.items.filter(function(x){ return x.ok === "na"; }).length;
+  var kept = t.items.length - na - open;
+  var sub = (br.length ? '<span class="brk">' + br.length + ' gebrochen: ' + esc(br.map(function(x){ return x.title; }).join(", ")) + '</span>' : '<span class="okt">' + (na ? kept + ' von ' + kept + ' eingehalten' : 'Alle ' + t.items.length + ' Regeln eingehalten') + '</span>');
+  return '<button class="trow" data-trade="' + esc(t.id) + '"><span class="badge ' + (br.length ? "bad" : "ok") + '">' + uic(br.length ? "x" : "check") + '</span><span class="ht"><b>' + fmtTime(t.ts) + (t.instrument ? ' <span class="dot">·</span> ' + esc(t.instrument) : '') + resPill(t.result) + '</b><small>' + sub + (na ? ' · ' + na + ' n. a.' : '') + (open ? ' · ' + open + ' offen' : '') + '</small></span><span class="v ' + cls(t.total) + '">' + signed(t.total) + '</span></button>';
+}
+function noTradeRowHTML(n){
+  return '<button class="trow" data-nt="' + esc(n.id) + '"><span class="badge nt">' + uic("moon") + '</span><span class="ht"><b>Kein Trade</b><small>' + esc(n.note || "Tag ohne Trade") + '</small></span><span class="v ' + cls(n.amount) + '">' + signed(n.amount) + '</span></button>';
+}
+function awardRowHTML(a){
+  return '<button class="trow bonus" data-award="' + esc(a.key) + '"><span class="badge gold">' + uic("star") + '</span><span class="ht"><b>Bonus <span class="dot">·</span> ' + esc(a.name) + '</b><small>' + a.count + ' ' + esc(BTYPES[a.type].short) + ' erreicht</small></span><span class="v pos">' + signed(a.amount) + '</span></button>';
+}
+function bonusProgress(b){
+  var sc = scanBonus(b), c = sc.count, cur = c % b.n;
+  return {count:c, cur:cur, n:b.n, times:sc.awards.length, label:cur + "/" + b.n + " " + BTYPES[b.type].short};
+}
+function bonusProgressHTML(){
+  var bs = bonusRules(true);
+  if(!bs.length) return '';
+  var h = '<div class="card span"><div class="ctitle">' + uic("star") + 'Bonus-Fortschritt<span class="grow"></span><button class="lnk" data-action="goto-bonus">Boni</button></div><div class="bons" id="bonusprog">';
+  bs.forEach(function(b){
+    var p = bonusProgress(b);
+    h += '<div class="bon" data-bid="' + esc(b.id) + '"><div class="bt"><b>' + esc(b.name) + '</b><span class="pos">+' + eur(b.amount) + '</span></div>' +
+      '<div class="bc"><b>' + p.cur + '/' + p.n + '</b> ' + esc(BTYPES[b.type].unit) + '<span class="dot">·</span><span class="nw">noch ' + (p.n - p.cur) + ' bis zum Bonus</span></div>' +
+      '<span class="bar gold"><i style="width:' + Math.round(p.cur / p.n * 100) + '%"></i></span>' +
+      '<small>' + (b.type === "cleantotal" ? 'insgesamt ' + p.count : 'aktuelle Serie ' + p.count) + (p.times ? ' · ' + p.times + '× erreicht' : '') + '</small></div>';
+  });
+  return h + '</div></div>';
 }
 function bookingRowHTML(b){
   return '<button class="trow" data-book="' + esc(b.id) + '"><span class="badge man">' + uic("coin") + '</span><span class="ht"><b>' + fmtTime(b.ts) + ' <span class="dot">·</span> Manuelle Buchung</b><small>' + esc(b.note || "ohne Notiz") + '</small></span><span class="v ' + cls(b.amount) + '">' + signed(b.amount) + '</span></button>';
 }
 function histHTML(){
-  var all = S.trades.map(function(t){ return {ts:t.ts, t:t}; }).concat(S.bookings.map(function(b){ return {ts:b.ts, b:b}; })).sort(function(a, b){ return b.ts - a.ts; });
-  var h = '<div class="summary"><span><b>' + S.trades.length + '</b> Trades' + (S.bookings.length ? ' · ' + S.bookings.length + ' Buchungen' : '') + '</span><button class="btn sm" data-action="new-booking">' + uic("coin") + ' Manuelle Buchung</button></div>';
-  if(!all.length) return h + '<div class="empty">' + uic("list", "big") + '<p>Noch keine Trades. Tippe auf + um deinen ersten Trade zu bewerten.</p></div>';
+  var all = S.trades.map(function(t){ return {ts:t.ts, o:0, t:t}; }).concat(S.bookings.map(function(b){ return {ts:b.ts, o:2, b:b}; }))
+    .concat(S.notrade.map(function(n){ return {ts:n.ts, o:1, n:n}; })).concat(S.awards.map(function(a){ return {ts:a.ts, o:3, a:a}; }))
+    .sort(function(a, b){ return b.ts - a.ts || b.o - a.o; });
+  var parts = [S.trades.length + ' Trades'];
+  if(S.notrade.length) parts.push(S.notrade.length + ' ohne Trade'); if(S.awards.length) parts.push(S.awards.length + ' Boni'); if(S.bookings.length) parts.push(S.bookings.length + ' Buchungen');
+  var h = '<div class="summary"><span>' + parts.join(' · ') + '</span><button class="btn sm" data-action="new-booking">' + uic("coin") + ' Buchung</button></div>';
+  if(!all.length) return h + '<div class="empty">' + uic("list", "big") + '<p>Noch keine Einträge. Tippe auf + um einen Trade oder einen Tag ohne Trade zu erfassen.</p></div>';
   var lastDay = "", out = '<div class="list" id="hist">';
   all.forEach(function(e){
     var dl = dayLabel(e.ts);
     if(dl !== lastDay){ out += '<div class="day">' + dl + '</div>'; lastDay = dl; }
-    out += e.t ? tradeRowHTML(e.t) : bookingRowHTML(e.b);
+    out += e.t ? tradeRowHTML(e.t) : e.n ? noTradeRowHTML(e.n) : e.a ? awardRowHTML(e.a) : bookingRowHTML(e.b);
   });
   return h + out + '</div><p class="hint">Antippen zum Ansehen, Bearbeiten oder Löschen.</p>';
 }
@@ -414,10 +566,28 @@ function ruleRowHTML(r){
     '<button class="hname" data-action="edit-rule" data-id="' + esc(r.id) + '"><span class="ht"><b>' + esc(r.title) + '</b><small>' + esc(r.cat) + '<span class="dot">·</span><span class="amt pos">+' + eur(r.plus) + '</span> / <span class="amt neg">−' + eur(r.minus) + '</span>' + (r.active ? '' : '<span class="dot">·</span>inaktiv') + '</small></span></button>' +
     '<label class="switch mini" title="Aktiv/inaktiv"><input type="checkbox" data-toggle="' + esc(r.id) + '"' + (r.active ? " checked" : "") + ' aria-label="Regel aktiv"><span class="sw"></span></label></div>';
 }
+function rsubHTML(){
+  return '<div class="seg2 rsub"><button data-rsub="rules" class="' + (UI.rsub !== "bonus" ? "on" : "") + '">Handelsregeln <i>' + rules(true).length + '</i></button><button data-rsub="bonus" class="' + (UI.rsub === "bonus" ? "on" : "") + '">' + uic("star") + 'Boni <i>' + bonusRules(true).length + '</i></button></div>';
+}
+function bonusRowHTML(b){
+  var p = b.active ? bonusProgress(b) : null;
+  return '<div class="hrow' + (b.active ? "" : " off") + '" data-bid="' + esc(b.id) + '"><span class="badge gold sm">' + uic("star") + '</span>' +
+    '<button class="hname" data-action="edit-bonus" data-id="' + esc(b.id) + '"><span class="ht"><b>' + esc(b.name) + '</b><small><span class="nw">' + esc(b.name === autoName(b.type, b.n) ? BTYPES[b.type].label : autoName(b.type, b.n)) + '</span><span class="dot">·</span><wbr><span class="amt pos nw">+' + eur(b.amount) + '</span><span class="dot">·</span><wbr><span class="nw">zählt ab ' + (b.since ? fmtDate(b.since) : 'Beginn') + '</span>' + (p ? '<span class="dot">·</span><wbr><span class="nw">' + p.cur + '/' + p.n + '</span>' : '<span class="dot">·</span><wbr>inaktiv') + '</small></span></button>' +
+    '<label class="switch mini" title="Aktiv/inaktiv"><input type="checkbox" data-btoggle="' + esc(b.id) + '"' + (b.active ? " checked" : "") + ' aria-label="Bonus aktiv"><span class="sw"></span></label></div>';
+}
+function bonusHTML(){
+  var all = bonusRules(), act = bonusRules(true);
+  var h = rsubHTML() + '<div class="summary"><span><b>' + act.length + '</b> von ' + all.length + ' aktiv</span><span>' + S.awards.length + '× erreicht · <b class="pos">+' + eur(S.awards.reduce(function(s, a){ return s + a.amount; }, 0)) + '</b></span></div>';
+  if(!all.length) return h + '<div class="empty">' + uic("star", "big") + '<p>Noch keine Boni. Tippe auf + und belohne dich z. B. für 3 Gewinn-Trades in Folge.</p><button class="btn primary" data-action="new-bonus">' + uic("plus") + ' Bonus hinzufügen</button></div>';
+  h += '<div class="list" id="blist">' + all.map(bonusRowHTML).join("") + '</div>';
+  h += '<p class="hint">Boni werden automatisch gebucht, sobald eine Serie N erreicht, und erneut bei 2N, 3N … bis sie bricht. Ändert sich der Verlauf, rechnet das Konto die Boni neu. Bereits gebuchte Boni behalten Name und Betrag.</p>';
+  return h;
+}
 function rulesHTML(){
+  if(UI.rsub === "bonus") return bonusHTML();
   var all = rules(), act = rules(true);
   var mp = r2(act.reduce(function(s, r){ return s + r.plus; }, 0)), mm = r2(act.reduce(function(s, r){ return s + r.minus; }, 0));
-  var h = '<div class="summary"><span><b>' + act.length + '</b> von ' + all.length + ' aktiv</span><span>pro Trade <b class="pos">+' + eur(mp) + '</b> bis <b class="neg">−' + eur(mm) + '</b></span></div>';
+  var h = rsubHTML() + '<div class="summary"><span><b>' + act.length + '</b> von ' + all.length + ' aktiv</span><span>pro Trade <b class="pos">+' + eur(mp) + '</b> bis <b class="neg">−' + eur(mm) + '</b></span></div>';
   if(!all.length) return h + '<div class="empty">' + uic("list", "big") + '<p>Noch keine Regeln. Tippe auf + und lege deine erste Regel an.</p><button class="btn primary" data-action="new-rule">' + uic("plus") + ' Regel hinzufügen</button></div>';
   h += '<div class="list" id="rlist">' + all.map(ruleRowHTML).join("") + '</div>';
   h += '<p class="hint">Antippen = bearbeiten · Schalter = aktiv/inaktiv · Reihenfolge per ' + uic("grip", "mi") + ' ziehen<br>Änderungen gelten nur für neue Trades, alte Trades bleiben unverändert.</p>';
@@ -428,7 +598,7 @@ function rulesHTML(){
 function openSheet(html){ var m = $("#modal"); m.innerHTML = '<div class="sheet" role="dialog" aria-modal="true">' + html + '</div>'; m.hidden = false; document.body.classList.add("noscroll"); }
 function closeSheet(){ var m = $("#modal"); m.hidden = true; m.innerHTML = ""; M = null; document.body.classList.remove("noscroll"); }
 var toastT = null;
-function toast(msg, ms){ var t = $("#toast"); if(!t) return; t.textContent = msg; t.classList.add("show"); clearTimeout(toastT); toastT = setTimeout(function(){ t.classList.remove("show"); }, ms || 3000); }
+function toast(msg, ms, kind){ var t = $("#toast"); if(!t) return; t.textContent = msg; t.classList.toggle("party", kind === "party"); t.classList.add("show"); clearTimeout(toastT); toastT = setTimeout(function(){ t.classList.remove("show"); }, ms || 3000); }
 function top(title){ return '<div class="shtop"><h2>' + title + '</h2><button class="tb" data-action="close" aria-label="Schließen">' + uic("x") + '</button></div>'; }
 
 /* Regel */
@@ -478,7 +648,7 @@ function toggleRule(id, on){ var r = ruleById(id); if(!r) return; r.active = on;
 function tradeSheet(id){
   var t = id ? tradeById(id) : null;
   if(!t && !rules(true).length){ toast("Lege zuerst mindestens eine aktive Regel an."); UI.tab = "rules"; saveUI(); render(); return; }
-  M = {type:"trade", id:t ? t.id : null, d:t ? JSON.parse(JSON.stringify(t)) : {ts:Date.now(), instrument:"", note:"", items:rules(true).map(function(r){ return {ruleId:r.id, title:r.title, cat:r.cat, plus:r.plus, minus:r.minus, ok:null}; })}};
+  M = {type:"trade", id:t ? t.id : null, d:t ? JSON.parse(JSON.stringify(t)) : {ts:Date.now(), instrument:"", note:"", result:null, items:rules(true).map(function(r){ return {ruleId:r.id, title:r.title, cat:r.cat, plus:r.plus, minus:r.minus, ok:null}; })}};
   drawTradeSheet();
 }
 function readTradeForm(){
@@ -493,14 +663,15 @@ function drawTradeSheet(){
   var h = top(edit ? "Trade bearbeiten" : "Trade erfassen");
   h += '<div class="two tw"><div><label class="lab" for="f-ts">Datum &amp; Uhrzeit</label><input id="f-ts" class="inp" type="datetime-local" value="' + toLocalInput(d.ts) + '"></div>' +
     '<div><label class="lab" for="f-inst">Instrument</label><input id="f-inst" class="inp" list="insts" maxlength="60" placeholder="optional, z. B. ES" autocomplete="off" value="' + esc(d.instrument) + '"><datalist id="insts">' + insts.map(function(x){ return '<option value="' + esc(x) + '">'; }).join("") + '</datalist></div></div>';
-  h += '<div class="allbar"><b class="grow">' + d.items.length + ' Regeln bewerten</b><button class="btn sm" data-action="all-ok">' + uic("check") + ' Alle eingehalten</button></div>';
+  h += '<label class="lab">Ergebnis <span class="muted">(optional, für Gewinn-Serien)</span></label>' + resSegHTML(d.result, "data-res");
+  h += '<div class="allbar"><b class="grow">' + d.items.length + ' Regeln bewerten</b><button class="btn sm" data-action="all-ok" id="f-allok">' + uic("check") + ' Alle eingehalten</button></div>';
   var cats = CATS.filter(function(c){ return d.items.some(function(x){ return x.cat === c; }); });
   cats.forEach(function(c){
     if(cats.length > 1) h += '<div class="catl">' + c + '</div>';
     d.items.forEach(function(x, i){
       if(x.cat !== c) return;
       h += '<div class="rq" data-q="' + i + '"><div class="qt"><b>' + esc(x.title) + '</b><small><span class="pos">+' + eur(x.plus) + '</span> / <span class="neg">−' + eur(x.minus) + '</span></small></div>' +
-        '<div class="yn"><button class="y" data-ans="' + i + '" data-v="1" aria-pressed="false">' + uic("check") + 'Eingehalten</button><button class="n" data-ans="' + i + '" data-v="0" aria-pressed="false">' + uic("x") + 'Gebrochen</button></div></div>';
+        '<div class="yn"><button class="y" data-ans="' + i + '" data-v="1" aria-pressed="false">' + uic("check") + '<span>Eingehalten</span></button><button class="n" data-ans="' + i + '" data-v="0" aria-pressed="false">' + uic("x") + '<span>Gebrochen</span></button><button class="na" data-ans="' + i + '" data-v="na" aria-pressed="false">' + uic("minus") + '<span>Nicht anwendbar</span></button></div></div>';
     });
   });
   h += '<label class="lab" for="f-note">Notiz</label><textarea id="f-note" class="inp" maxlength="2000" placeholder="optional: Was lief gut, was nicht?">' + esc(d.note) + '</textarea>';
@@ -508,19 +679,22 @@ function drawTradeSheet(){
   h += '<div class="sfoot"><div class="sum"><small id="f-open"></small><b id="f-total">±0 €</b></div><button class="btn primary" data-action="save-trade" id="f-save">Buchen</button></div>';
   openSheet(h); updateTradeUI();
 }
+function resSegHTML(cur, attr){
+  return '<div class="seg2 res">' + ["win", "loss", "be"].map(function(k){ return '<button ' + attr + '="' + k + '" class="' + k + (cur === k ? " on" : "") + '" aria-pressed="' + (cur === k) + '">' + RES[k] + '</button>'; }).join("") + '</div>';
+}
 function updateTradeUI(){
-  var d = M.d, open = 0;
+  var d = M.d, open = 0, na = 0;
   d.items.forEach(function(x, i){
-    if(x.ok == null) open++;
+    if(x.ok == null) open++; if(x.ok === "na") na++;
     var q = document.querySelector('[data-q="' + i + '"]'); if(!q) return;
-    q.classList.toggle("ok", x.ok === true); q.classList.toggle("bad", x.ok === false);
-    var y = q.querySelector(".y"), n = q.querySelector(".n");
-    y.classList.toggle("on", x.ok === true); n.classList.toggle("on", x.ok === false);
-    y.setAttribute("aria-pressed", x.ok === true); n.setAttribute("aria-pressed", x.ok === false);
+    q.classList.toggle("ok", x.ok === true); q.classList.toggle("bad", x.ok === false); q.classList.toggle("na", x.ok === "na");
+    [["y", true], ["n", false], ["na", "na"]].forEach(function(p){ var b = q.querySelector("." + p[0]); b.classList.toggle("on", x.ok === p[1]); b.setAttribute("aria-pressed", x.ok === p[1]); });
   });
+  document.querySelectorAll("[data-res]").forEach(function(b){ var on = b.getAttribute("data-res") === d.result; b.classList.toggle("on", on); b.setAttribute("aria-pressed", on); });
+  var ab = $("#f-allok"); if(ab) ab.lastChild.textContent = (open && open < d.items.length) ? " Rest eingehalten" : " Alle eingehalten";
   var tot = tradeTotal(d), br = d.items.filter(function(x){ return x.ok === false; }).length;
   var t = $("#f-total"); t.textContent = signed(tot); t.className = cls(tot);
-  $("#f-open").textContent = open ? open + " von " + d.items.length + " noch offen" : (br ? br + " gebrochen · Saldo dieses Trades" : "Alles eingehalten · Saldo dieses Trades");
+  $("#f-open").textContent = open ? open + " von " + d.items.length + " noch offen" : (br ? br + " gebrochen" : "Alles eingehalten") + (na ? " · " + na + " n.\u202fa." : "") + " · Saldo";
   var s = $("#f-save"); s.disabled = open > 0; s.textContent = M.id ? "Speichern" : "Buchen";
 }
 function answer(i, v){ readTradeForm(); var x = M.d.items[i]; if(!x) return; x.ok = x.ok === v ? null : v; updateTradeUI();
@@ -528,31 +702,175 @@ function answer(i, v){ readTradeForm(); var x = M.d.items[i]; if(!x) return; x.o
 function saveTrade(){
   readTradeForm(); var d = M.d;
   var open = d.items.filter(function(x){ return x.ok == null; }).length;
-  if(open){ toast("Bitte bewerte noch " + open + (open === 1 ? " Regel." : " Regeln.")); var f = document.querySelector(".rq:not(.ok):not(.bad)"); if(f) f.scrollIntoView({behavior:"smooth", block:"center"}); return; }
+  if(open){ toast("Bitte bewerte noch " + open + (open === 1 ? " Regel." : " Regeln.")); var f = document.querySelector(".rq:not(.ok):not(.bad):not(.na)"); if(f) f.scrollIntoView({behavior:"smooth", block:"center"}); return; }
   d.updatedAt = Date.now();
   var t = normTrade(d);
-  if(M.id){ var i = S.trades.indexOf(tradeById(M.id)); t.id = M.id; S.trades[i] = t; toast("Trade gespeichert: " + signed(t.total)); }
-  else { t.id = uid("t"); S.trades.push(t); toast("Trade gebucht: " + signed(t.total) + "\nNeuer Kontostand: " + money(balance())); }
-  save(); closeSheet(); render();
+  var msg;
+  if(M.id){ var i = S.trades.indexOf(tradeById(M.id)); t.id = M.id; S.trades[i] = t; msg = "Trade gespeichert: " + signed(t.total); }
+  else { t.id = uid("t"); S.trades.push(t); msg = null; }
+  closeSheet(); var r = recalcBonuses(); save(); render();
+  if(!msg) msg = "Trade gebucht: " + signed(t.total) + "\nNeuer Kontostand: " + money(balance());
+  bonusToast(r, msg);
+}
+function bonusToast(r, msg){
+  var sum = function(l){ return r2(l.reduce(function(s, a){ return s + a.amount; }, 0)); };
+  if(r.added.length) toast("🎉 Bonus erreicht!\n" + r.added.map(function(a){ return a.name + " " + signed(a.amount); }).join("\n") + (r.removed.length ? "\nKorrigiert: " + signed(-sum(r.removed)) : "") + "\nKontostand: " + money(balance()), 5000, "party");
+  else if(r.removed.length) toast((msg ? msg + "\n" : "") + "Boni neu berechnet: " + signed(-sum(r.removed)), 4500);
+  else if(msg) toast(msg);
 }
 function deleteTrade(id){
   var t = tradeById(id); if(!t) return;
   if(!confirm("Trade vom " + fmtTs(t.ts) + " (" + signed(t.total) + ") wirklich löschen?")) return;
-  S.trades = S.trades.filter(function(x){ return x.id !== id; }); save(); closeSheet(); render(); toast("Trade gelöscht.");
+  S.trades = S.trades.filter(function(x){ return x.id !== id; }); closeSheet(); commit("Trade gelöscht.");
 }
 function tradeDetail(id){
   var t = tradeById(id); if(!t) return; M = {type:"detail", id:id};
-  var br = brokenOf(t).length, kept = t.items.filter(function(x){ return x.ok === true; }).length;
+  var br = brokenOf(t).length, kept = t.items.filter(function(x){ return x.ok === true; }).length, na = t.items.filter(function(x){ return x.ok === "na"; }).length;
   var h = top("Trade vom " + fmtDate(t.ts));
   h += '<div class="muted small">' + fmtTime(t.ts) + ' Uhr' + (t.instrument ? ' · ' + esc(t.instrument) : '') + '</div>';
-  h += '<div class="dsum"><b class="' + cls(t.total) + '">' + signed(t.total) + '</b><span class="muted small">' + kept + ' eingehalten · ' + br + ' gebrochen</span></div>';
+  h += '<div class="dsum"><b class="' + cls(t.total) + '">' + signed(t.total) + '</b><span class="muted small">' + kept + ' eingehalten · ' + br + ' gebrochen' + (na ? ' · ' + na + ' nicht anwendbar' : '') + '</span></div>';
+  h += '<label class="lab">Ergebnis</label>' + resSegHTML(t.result, "data-dres");
   h += '<div class="card" style="padding:4px 12px">' + t.items.map(function(x){
     var v = x.ok === true ? x.plus : x.ok === false ? -x.minus : 0;
-    return '<div class="drow"><span class="badge ' + (x.ok === true ? "ok" : x.ok === false ? "bad" : "man") + '">' + uic(x.ok === false ? "x" : x.ok === true ? "check" : "minus") + '</span><span class="ht"><b style="font-weight:500;font-size:14.5px">' + esc(x.title) + '</b></span><span class="amt ' + cls(v) + '">' + signed(v) + '</span></div>';
+    return '<div class="drow"><span class="badge ' + (x.ok === true ? "ok" : x.ok === false ? "bad" : "man") + '">' + uic(x.ok === false ? "x" : x.ok === true ? "check" : "minus") + '</span><span class="ht"><b style="font-weight:500;font-size:14.5px">' + esc(x.title) + '</b>' + (x.ok === "na" ? '<small>nicht anwendbar</small>' : '') + '</span><span class="amt ' + cls(v) + '">' + signed(v) + '</span></div>';
   }).join("") + '</div>';
   if(t.note) h += '<label class="lab">Notiz</label><div class="card small" style="white-space:pre-wrap">' + esc(t.note) + '</div>';
+  var aw = S.awards.filter(function(a){ return a.triggerId === t.id; });
+  if(aw.length) h += '<label class="lab">Ausgelöste Boni</label>' + aw.map(function(a){ return '<div class="drow"><span class="badge gold">' + uic("star") + '</span><span class="ht"><b style="font-weight:500;font-size:14.5px">' + esc(a.name) + '</b></span><span class="amt pos">' + signed(a.amount) + '</span></div>'; }).join("");
   h += '<div class="actions"><button class="btn danger" data-action="del-trade">' + uic("trash") + ' Löschen</button><span class="grow"></span><button class="btn" data-action="close">Schließen</button><button class="btn primary" data-action="edit-trade">' + uic("edit") + ' Bearbeiten</button></div>';
   openSheet(h);
+}
+function setResult(id, r){
+  var t = tradeById(id); if(!t) return;
+  t.result = t.result === r ? null : r; t.updatedAt = Date.now();
+  var res = recalcBonuses(); save(); render(); tradeDetail(id);
+  bonusToast(res, t.result ? "Ergebnis: " + RES[t.result] : "Ergebnis entfernt");
+}
+
+/* Auswahl beim + */
+function pickSheet(){
+  M = {type:"pick"};
+  var today = dayKey(Date.now()), done = noTradeByDay(today);
+  var h = top("Neuer Eintrag");
+  h += '<button class="pick" data-action="new-trade"><span class="badge ok">' + uic("list") + '</span><span class="ht"><b>Trade erfassen</b><small>Regeln abhaken, Ergebnis wählen</small></span></button>';
+  h += '<button class="pick" data-action="new-notrade"><span class="badge nt">' + uic("moon") + '</span><span class="ht"><b>Kein Trade heute</b><small>' + (done ? 'Heute bereits erfasst' : 'Bonus <span class="pos">+' + eur(S.settings.noTrade) + '</span> für einen Tag ohne Trade') + '</small></span></button>';
+  h += '<button class="pick" data-action="new-booking"><span class="badge man">' + uic("coin") + '</span><span class="ht"><b>Manuelle Buchung</b><small>Korrektur, Strafe oder Sonderbonus</small></span></button>';
+  openSheet(h);
+}
+
+/* Kein Trade */
+function noTradeByDay(day, except){ for(var i = 0; i < S.notrade.length; i++) if(S.notrade[i].day === day && S.notrade[i].id !== except) return S.notrade[i]; return null; }
+function noTradeSheet(id){
+  var n = id ? noTradeById(id) : null;
+  M = {type:"notrade", id:n ? n.id : null, d:n ? {day:n.day, note:n.note, amount:n.amount} : {day:dayKey(Date.now()), note:"", amount:S.settings.noTrade}};
+  var d = M.d, edit = !!M.id;
+  var h = top(edit ? "Kein-Trade-Tag" : "Kein Trade heute");
+  h += '<div class="dsum"><b class="pos">' + signed(d.amount) + '</b><span class="muted small">Bonus für einen Tag ohne Trade</span></div>';
+  h += '<p class="note" style="margin-top:2px">Keine Regelbewertung nötig: alle Regeln zählen 0 €. Zählt nicht in die Regel-Quote und unterbricht keine Trade-Serie.</p>';
+  h += '<label class="lab" for="f-day">Datum</label><input id="f-day" class="inp" type="date" value="' + d.day + '">';
+  h += '<p class="warn" id="f-dup" hidden></p>';
+  h += '<label class="lab" for="f-nnote">Notiz</label><input id="f-nnote" class="inp" maxlength="300" placeholder="optional, z. B. kein Setup, bewusst pausiert" value="' + esc(d.note) + '">';
+  h += '<div class="actions">' + (edit ? '<button class="btn danger" data-action="del-notrade">' + uic("trash") + ' Löschen</button>' : '') + '<span class="grow"></span><button class="btn" data-action="close">Abbrechen</button><button class="btn primary" data-action="save-notrade" id="f-nsave">' + (edit ? "Speichern" : "Buchen") + '</button></div>';
+  openSheet(h); checkNoTradeDup();
+}
+function checkNoTradeDup(){
+  var f = $("#f-day"), w = $("#f-dup"), b = $("#f-nsave"); if(!f || !w) return false;
+  var day = f.value, dup = day && noTradeByDay(day, M.id), tr = day && S.trades.some(function(t){ return dayKey(t.ts) === day; });
+  if(dup){ w.hidden = false; w.className = "warn"; w.textContent = "Für den " + fmtDate(fromDayKey(day)) + " ist bereits ein Kein-Trade-Tag gebucht. Pro Datum geht das nur einmal."; }
+  else if(tr){ w.hidden = false; w.className = "warn soft"; w.textContent = "Hinweis: An diesem Tag ist bereits ein Trade erfasst."; }
+  else w.hidden = true;
+  if(b) b.disabled = !day || !!dup;
+  return !!dup;
+}
+function saveNoTrade(){
+  var f = $("#f-day"), day = f && f.value, note = ($("#f-nnote") || {}).value || "";
+  if(!day || !fromDayKey(day)){ toast("Bitte wähle ein Datum."); return; }
+  var dup = noTradeByDay(day, M.id);
+  if(dup){ checkNoTradeDup(); toast("Für den " + fmtDate(fromDayKey(day)) + " ist bereits ein Kein-Trade-Tag gebucht."); return; }
+  var n = normNoTrade({id:M.id || uid("n"), day:day, note:note.trim(), amount:M.d.amount, createdAt:M.id ? noTradeById(M.id).createdAt : Date.now()});
+  if(M.id) S.notrade[S.notrade.indexOf(noTradeById(M.id))] = n; else S.notrade.push(n);
+  var edit = !!M.id; closeSheet(); commit(edit ? "Kein-Trade-Tag gespeichert." : "Kein Trade am " + fmtDate(n.ts) + ": " + signed(n.amount) + "\nKontostand: " + money(balance()));
+}
+function deleteNoTrade(){
+  var n = noTradeById(M.id); if(!n) return;
+  if(!confirm("Kein-Trade-Tag vom " + fmtDate(n.ts) + " (" + signed(n.amount) + ") wirklich löschen?")) return;
+  S.notrade = S.notrade.filter(function(x){ return x.id !== n.id; }); closeSheet(); commit("Kein-Trade-Tag gelöscht.");
+}
+
+/* Bonus-Eintrag im Verlauf */
+function awardDetail(key){
+  var a = awardByKey(key); if(!a) return; M = {type:"award", id:key};
+  var b = bonusById(a.bonusId), tr = tradeById(a.triggerId) || noTradeById(a.triggerId);
+  var h = top("Bonus erreicht");
+  h += '<div class="dsum"><b class="pos">' + signed(a.amount) + '</b><span class="muted small">' + fmtDate(a.ts) + '</span></div>';
+  h += '<div class="card"><b>' + esc(a.name) + '</b><div class="muted small" style="margin-top:4px">' + a.count + ' ' + esc(BTYPES[a.type].short) + ' erreicht (Ziel: alle ' + a.n + ')</div></div>';
+  h += '<p class="note">' + (a.frozen ? 'Diese Bonus-Regel ist inaktiv oder gelöscht. Der Bonus bleibt eingefroren im Konto.' : 'Wird automatisch berechnet: Bearbeitest oder löschst du Einträge, wird der Bonus angepasst oder entfernt.') + '</p>';
+  h += '<div class="actions">' + (a.frozen ? '<button class="btn danger" data-action="del-award">' + uic("trash") + ' Löschen</button>' : '') + (tr ? '<button class="btn" data-action="award-src">Auslöser ansehen</button>' : '') + (b ? '<button class="btn" data-action="award-rule">Bonus-Regel</button>' : '') + '<span class="grow"></span><button class="btn primary" data-action="close">Schließen</button></div>';
+  openSheet(h);
+}
+
+/* Bonus-Regel */
+function bonusSheet(id){
+  var b = id ? bonusById(id) : null;
+  M = {type:"bonus", id:b ? b.id : null, d:b ? JSON.parse(JSON.stringify(b)) : {name:"", type:"clean", n:5, amount:50, active:true, since:dayStart(Date.now())}};
+  M.auto = !M.d.name || M.d.name === autoName(M.d.type, M.d.n);
+  if(!b) M.d.name = autoName(M.d.type, M.d.n);
+  drawBonusSheet();
+}
+function readBonusForm(){
+  if(!M || M.type !== "bonus") return;
+  var a = $("#f-bname"), n = $("#f-n"), m = $("#f-bamt"), s = $("#f-since"), c = $("#f-bactive");
+  if(a) M.d.name = a.value; if(n) M.d.n = Math.round(num(n.value, M.d.n, 1, 1000)); if(m) M.d.amount = num(m.value, M.d.amount, 0, 10000000);
+  if(s && s.value && s.value !== dayKey(M.d.since)){ var v = fromDayKey(s.value); if(v != null) M.d.since = v; }
+  if(c) M.d.active = c.checked;
+}
+function bonusAuto(){ if(M.auto) M.d.name = autoName(M.d.type, M.d.n); }
+function bonusPrev(d){ return 'Bonus <b class="pos">+' + eur(d.amount) + '</b> bei ' + d.n + ', ' + (2 * d.n) + ', ' + (3 * d.n) + ' … ' + esc(BTYPES[d.type].short); }
+function drawBonusSheet(){
+  var d = M.d, edit = !!M.id;
+  var h = top(edit ? "Bonus bearbeiten" : "Neuer Bonus");
+  h += '<label class="lab">Wofür?</label><div class="btypes">' + BORDER.map(function(k){ return '<button data-btype="' + k + '" class="' + (k === d.type ? "on" : "") + '">' + BTYPES[k].label + '</button>'; }).join("") + '</div>';
+  h += '<p class="note">' + BTYPES[d.type].hint + '</p>';
+  h += '<div class="two"><div><label class="lab" for="f-n">Anzahl N (' + BTYPES[d.type].unit + ')</label><div class="stepper"><button data-action="n-dec" aria-label="weniger">' + uic("minus") + '</button><input id="f-n" type="number" inputmode="numeric" min="1" step="1" value="' + d.n + '"><button data-action="n-inc" aria-label="mehr">' + uic("plus") + '</button></div></div>' +
+    '<div><label class="lab" for="f-bamt">Bonus (€)</label><div class="stepper ok"><button data-action="ba-dec" aria-label="weniger">' + uic("minus") + '</button><input id="f-bamt" type="number" inputmode="decimal" min="0" step="5" value="' + d.amount + '"><button data-action="ba-inc" aria-label="mehr">' + uic("plus") + '</button></div></div></div>';
+  h += '<p class="note" id="f-bprev">' + bonusPrev(d) + '</p>';
+  h += '<label class="lab" for="f-bname">Name</label><input id="f-bname" class="inp" maxlength="120" value="' + esc(d.name) + '">';
+  h += '<label class="lab" for="f-since">Zählt ab</label><input id="f-since" class="inp" type="date" value="' + dayKey(d.since || 0) + '">';
+  h += '<p class="note">Nur Einträge ab diesem Datum zählen für diesen Bonus.</p>';
+  h += '<label class="lab">Status</label><label class="switch"><input type="checkbox" id="f-bactive"' + (d.active ? " checked" : "") + '><span class="sw"></span><span>Aktiv (wird automatisch gebucht)</span></label>';
+  h += '<div class="actions">' + (edit ? '<button class="btn danger" data-action="del-bonus">' + uic("trash") + ' Löschen</button>' : '') + '<span class="grow"></span><button class="btn" data-action="close">Abbrechen</button><button class="btn primary" data-action="save-bonus">Speichern</button></div>';
+  openSheet(h);
+}
+function bonusStep(k, delta){ readBonusForm(); if(k === "n"){ M.d.n = Math.max(1, Math.min(1000, M.d.n + delta)); bonusAuto(); } else M.d.amount = Math.max(0, r2(M.d.amount + delta)); drawBonusSheet(); }
+function saveBonus(){
+  readBonusForm(); var d = M.d; d.name = d.name.trim().replace(/\s+/g, " ") || autoName(d.type, d.n);
+  var msg;
+  if(M.id){
+    var b = bonusById(M.id);
+    if(b.active && !d.active) freezeAwards(b.id);
+    if(!b.active && d.active && d.since < Date.now() - 1000 && d.since === b.since) d.since = dayStart(Date.now());
+    ["name", "type", "n", "amount", "active", "since"].forEach(function(k){ b[k] = d[k]; }); msg = "Bonus gespeichert.";
+  } else {
+    var mo = S.bonusRules.reduce(function(m, x){ return Math.max(m, x.order); }, 0);
+    S.bonusRules.push(normBonusRule({id:uid("x"), name:d.name, type:d.type, n:d.n, amount:d.amount, active:d.active, since:d.since, order:mo + 1}, 0)); msg = "Bonus angelegt.";
+  }
+  closeSheet(); UI.tab = "rules"; UI.rsub = "bonus"; saveUI(); commit(msg);
+}
+function deleteBonus(){
+  var b = bonusById(M.id); if(!b) return;
+  var n = S.awards.filter(function(a){ return a.bonusId === b.id; }).length;
+  if(!confirm("Bonus „" + b.name + "“ wirklich löschen?" + (n ? "\n\nBereits gebuchte Boni (" + n + "×) bleiben im Konto." : ""))) return;
+  freezeAwards(b.id); S.bonusRules = S.bonusRules.filter(function(x){ return x.id !== b.id; }); closeSheet(); commit("Bonus gelöscht.");
+}
+function toggleBonus(id, on){
+  var b = bonusById(id); if(!b) return;
+  if(!on) freezeAwards(id); else b.since = Math.max(b.since, dayStart(Date.now()));
+  b.active = on; commit(on ? "Bonus aktiv (zählt ab heute)." : "Bonus inaktiv. Gebuchte Boni bleiben.");
+}
+function deleteAward(){
+  var a = awardByKey(M.id); if(!a || !a.frozen) return;
+  if(!confirm("Bonus „" + a.name + "“ (" + signed(a.amount) + ") aus dem Konto löschen?")) return;
+  S.awards = S.awards.filter(function(x){ return x.key !== a.key; }); closeSheet(); commit("Bonus gelöscht.");
 }
 
 /* Manuelle Buchung */
@@ -583,12 +901,12 @@ function saveBooking(){
   if(!a){ toast("Bitte gib einen Betrag ein."); return; }
   var b = normBooking({id:M.id || uid("b"), ts:d.ts, amount:a * d.sign, note:d.note.trim()});
   if(M.id){ S.bookings[S.bookings.indexOf(bookingById(M.id))] = b; } else S.bookings.push(b);
-  save(); closeSheet(); render(); toast("Gebucht: " + signed(b.amount));
+  closeSheet(); commit("Gebucht: " + signed(b.amount));
 }
 function deleteBooking(){
   var b = bookingById(M.id); if(!b) return;
   if(!confirm("Buchung (" + signed(b.amount) + ") wirklich löschen?")) return;
-  S.bookings = S.bookings.filter(function(x){ return x.id !== b.id; }); save(); closeSheet(); render(); toast("Buchung gelöscht.");
+  S.bookings = S.bookings.filter(function(x){ return x.id !== b.id; }); closeSheet(); commit("Buchung gelöscht.");
 }
 
 /* Einstellungen */
@@ -599,17 +917,20 @@ function settingsSheet(){
   h += '<h3>Konto</h3><div class="two"><div><label class="lab" for="s-start">Startguthaben (€)</label><input id="s-start" class="inp" type="number" inputmode="decimal" step="1" value="' + st.start + '"></div><div></div></div>';
   h += '<div class="two"><div><label class="lab" for="s-plus">Standard-Gutschrift</label><input id="s-plus" class="inp" type="number" inputmode="decimal" min="0" step="1" value="' + st.defPlus + '"></div><div><label class="lab" for="s-minus">Standard-Abzug</label><input id="s-minus" class="inp" type="number" inputmode="decimal" min="0" step="1" value="' + st.defMinus + '"></div></div>';
   h += '<p class="note">Die Standardbeträge werden bei neuen Regeln vorgeschlagen. Alles ist virtuell, kein echtes Geld.</p>';
+  h += '<div class="two"><div><label class="lab" for="s-nt">Bonus „Kein Trade“ (€)</label><input id="s-nt" class="inp" type="number" inputmode="decimal" min="0" step="5" value="' + st.noTrade + '"></div><div></div></div>';
+  h += '<p class="note">Gilt für neue Kein-Trade-Tage. Bereits gebuchte Tage behalten ihren Betrag.</p>';
   h += '<h3>Darstellung</h3><div class="seg2"><button data-theme-set="dark" class="' + (UI.theme === "dark" ? "on" : "") + '">Dunkel</button><button data-theme-set="light" class="' + (UI.theme === "light" ? "on" : "") + '">Hell</button><button data-theme-set="system" class="' + (UI.theme === "system" ? "on" : "") + '">System</button></div>';
   h += '<h3>Sichern &amp; übertragen</h3><p class="note">Deine Daten liegen nur in diesem Browser. Exportiere regelmäßig ein Backup. Für ein anderes Gerät: dort die Datei importieren. Der Import ersetzt alle Daten auf dem Gerät.</p>';
   h += '<div class="stack"><button class="btn block" data-action="export">Export als Datei</button>' + (navigator.canShare ? '<button class="btn block" data-action="share">Teilen …</button>' : '') + '<button class="btn block" data-action="import">Datei importieren</button></div>';
-  h += '<p class="muted small">Zuletzt exportiert: ' + (S.meta.lastExport ? fmtTs(S.meta.lastExport) : "noch nie") + ' · importiert: ' + (S.meta.lastImport ? fmtTs(S.meta.lastImport) : "noch nie") + '<br>' + S.rules.length + ' Regeln · ' + S.trades.length + ' Trades · ' + S.bookings.length + ' Buchungen</p>';
+  h += '<p class="muted small">Zuletzt exportiert: ' + (S.meta.lastExport ? fmtTs(S.meta.lastExport) : "noch nie") + ' · importiert: ' + (S.meta.lastImport ? fmtTs(S.meta.lastImport) : "noch nie") + '<br>' + S.rules.length + ' Regeln · ' + S.trades.length + ' Trades · ' + S.notrade.length + ' Kein-Trade-Tage · ' + S.bonusRules.length + ' Bonus-Regeln · ' + S.awards.length + ' Boni · ' + S.bookings.length + ' Buchungen</p>';
   h += '<h3>Als App installieren</h3><p class="note">Android/Chrome: Menü ⋮ → „App installieren“ bzw. „Zum Startbildschirm hinzufügen“. iPhone/Safari: Teilen → „Zum Home-Bildschirm“.</p>';
   h += '<h3>Neu anfangen</h3><button class="btn block danger" data-action="reset">Alle Daten löschen</button>';
   h += '<p class="muted small">Version ' + VERSION + '</p><div class="actions"><span class="grow"></span><button class="btn primary" data-action="close">Fertig</button></div>';
   openSheet(h);
 }
 function readSettings(){
-  var a = $("#s-start"), b = $("#s-plus"), c = $("#s-minus");
+  var a = $("#s-start"), b = $("#s-plus"), c = $("#s-minus"), nt = $("#s-nt");
+  if(nt) S.settings.noTrade = num(nt.value, S.settings.noTrade, 0, 10000000);
   if(a) S.settings.start = num(a.value, S.settings.start, -10000000, 10000000);
   if(b) S.settings.defPlus = num(b.value, S.settings.defPlus, 0, 100000);
   if(c) S.settings.defMinus = num(c.value, S.settings.defMinus, 0, 100000);
@@ -631,8 +952,8 @@ function doShare(){
 function importData(obj){
   if(obj && obj.app && obj.app !== "regelkonto") throw new Error("Datei gehört nicht zum Regelkonto");
   var d = migrate(obj && obj.data ? obj.data : obj);
-  if(!confirm("Backup importieren?\n\nDatei: " + d.rules.length + " Regeln, " + d.trades.length + " Trades, " + d.bookings.length + " Buchungen.\nDas ersetzt die aktuellen Daten auf diesem Gerät (" + S.rules.length + " Regeln, " + S.trades.length + " Trades).")) return false;
-  d.meta.lastImport = Date.now(); S = d; save(); return true;
+  if(!confirm("Backup importieren?\n\nDatei: " + d.rules.length + " Regeln, " + d.trades.length + " Trades, " + d.notrade.length + " Kein-Trade-Tage, " + d.bookings.length + " Buchungen.\nDas ersetzt die aktuellen Daten auf diesem Gerät (" + S.rules.length + " Regeln, " + S.trades.length + " Trades).")) return false;
+  d.meta.lastImport = Date.now(); S = d; recalcBonuses(); save(); return true;
 }
 function doImportFile(file){
   var rd = new FileReader();
@@ -688,7 +1009,22 @@ function reorder(ids){
 /* ---------- Ereignisse ---------- */
 function act(a, el){
   switch(a){
-    case "fab": if(UI.tab === "rules") ruleSheet(null); else tradeSheet(null); break;
+    case "fab": if(UI.tab === "rules"){ if(UI.rsub === "bonus") bonusSheet(null); else ruleSheet(null); } else pickSheet(); break;
+    case "new-notrade": noTradeSheet(null); break;
+    case "save-notrade": saveNoTrade(); break;
+    case "del-notrade": deleteNoTrade(); break;
+    case "new-bonus": bonusSheet(null); break;
+    case "edit-bonus": bonusSheet(el.getAttribute("data-id")); break;
+    case "save-bonus": saveBonus(); break;
+    case "del-bonus": deleteBonus(); break;
+    case "n-inc": bonusStep("n", 1); break;
+    case "n-dec": bonusStep("n", -1); break;
+    case "ba-inc": bonusStep("a", 5); break;
+    case "ba-dec": bonusStep("a", -5); break;
+    case "del-award": deleteAward(); break;
+    case "award-src": var aw = awardByKey(M.id); if(aw){ if(tradeById(aw.triggerId)) tradeDetail(aw.triggerId); else noTradeSheet(aw.triggerId); } break;
+    case "award-rule": var aw2 = awardByKey(M.id); if(aw2) bonusSheet(aw2.bonusId); break;
+    case "goto-bonus": UI.tab = "rules"; UI.rsub = "bonus"; saveUI(); render(); window.scrollTo(0, 0); break;
     case "new-trade": tradeSheet(null); break;
     case "new-rule": ruleSheet(null); break;
     case "edit-rule": ruleSheet(el.getAttribute("data-id")); break;
@@ -698,7 +1034,7 @@ function act(a, el){
     case "p-dec": readRuleForm(); M.d.plus = Math.max(0, r2(M.d.plus - 1)); drawRuleSheet(); break;
     case "m-inc": readRuleForm(); M.d.minus = r2(M.d.minus + 1); drawRuleSheet(); break;
     case "m-dec": readRuleForm(); M.d.minus = Math.max(0, r2(M.d.minus - 1)); drawRuleSheet(); break;
-    case "all-ok": readTradeForm(); M.d.items.forEach(function(x){ x.ok = true; }); updateTradeUI(); break;
+    case "all-ok": readTradeForm(); var anyOpen = M.d.items.some(function(x){ return x.ok == null; }); M.d.items.forEach(function(x){ if(!anyOpen || x.ok == null) x.ok = true; }); updateTradeUI(); break;
     case "save-trade": saveTrade(); break;
     case "del-trade": deleteTrade(M.id); break;
     case "edit-trade": tradeSheet(M.id); break;
@@ -717,11 +1053,19 @@ function bind(){
   document.addEventListener("click", function(e){
     var t = e.target;
     var tab = t.closest("[data-tab]"); if(tab){ UI.tab = tab.getAttribute("data-tab"); saveUI(); render(); window.scrollTo(0, 0); return; }
-    if(M && M.type === "trade"){ var an = t.closest("[data-ans]"); if(an){ answer(+an.getAttribute("data-ans"), an.getAttribute("data-v") === "1"); return; } }
+    if(M && M.type === "trade"){
+      var an = t.closest("[data-ans]"); if(an){ var av = an.getAttribute("data-v"); answer(+an.getAttribute("data-ans"), av === "1" ? true : av === "0" ? false : "na"); return; }
+      var rs = t.closest("[data-res]"); if(rs){ readTradeForm(); var rv = rs.getAttribute("data-res"); M.d.result = M.d.result === rv ? null : rv; updateTradeUI(); return; }
+    }
+    if(M && M.type === "detail"){ var dr = t.closest("[data-dres]"); if(dr){ setResult(M.id, dr.getAttribute("data-dres")); return; } }
+    if(M && M.type === "bonus"){ var bt = t.closest("[data-btype]"); if(bt){ readBonusForm(); M.d.type = bt.getAttribute("data-btype"); bonusAuto(); drawBonusSheet(); return; } }
+    var rsb = t.closest("[data-rsub]"); if(rsb){ UI.rsub = rsb.getAttribute("data-rsub"); saveUI(); render(); return; }
     if(M && M.type === "rule"){ var c = t.closest("[data-cat]"); if(c){ readRuleForm(); M.d.cat = c.getAttribute("data-cat"); drawRuleSheet(); return; } }
     if(M && M.type === "booking"){ var sg = t.closest("[data-sign]"); if(sg){ readBookingForm(); M.d.sign = +sg.getAttribute("data-sign"); drawBookingSheet(); return; } }
     var tr = t.closest("[data-trade]"); if(tr){ tradeDetail(tr.getAttribute("data-trade")); return; }
     var bk = t.closest("[data-book]"); if(bk){ bookingSheet(bk.getAttribute("data-book")); return; }
+    var ntr = t.closest("[data-nt]"); if(ntr){ noTradeSheet(ntr.getAttribute("data-nt")); return; }
+    var awr = t.closest("[data-award]"); if(awr){ awardDetail(awr.getAttribute("data-award")); return; }
     var th = t.closest("[data-theme-set]"); if(th){ UI.theme = th.getAttribute("data-theme-set"); saveUI(); applyTheme(); settingsSheet(); return; }
     var a = t.closest("[data-action]"); if(a){ act(a.getAttribute("data-action"), a); return; }
     if(t.id === "modal"){ closeSheet(); render(); }
@@ -729,17 +1073,26 @@ function bind(){
   document.addEventListener("change", function(e){
     var t = e.target;
     if(t.hasAttribute && t.hasAttribute("data-toggle")){ toggleRule(t.getAttribute("data-toggle"), t.checked); return; }
-    if(t.id === "s-start" || t.id === "s-plus" || t.id === "s-minus"){ readSettings(); return; }
+    if(t.hasAttribute && t.hasAttribute("data-btoggle")){ toggleBonus(t.getAttribute("data-btoggle"), t.checked); return; }
+    if(t.id === "s-start" || t.id === "s-plus" || t.id === "s-minus" || t.id === "s-nt"){ readSettings(); return; }
+    if(t.id === "f-day"){ checkNoTradeDup(); return; }
 
     if(t.id === "file" && t.files && t.files[0]){ doImportFile(t.files[0]); t.value = ""; }
   });
   document.addEventListener("input", function(e){
     var t = e.target;
     if((t.id === "f-plus" || t.id === "f-minus") && M && M.type === "rule"){ readRuleForm(); var pv = $("#f-prev"); if(pv) pv.innerHTML = rulePrev(M.d); }
+    if(M && M.type === "bonus" && (t.id === "f-n" || t.id === "f-bamt" || t.id === "f-bname")){
+      if(t.id === "f-bname") M.auto = false;
+      readBonusForm(); if(t.id === "f-n" && M.auto){ M.d.name = autoName(M.d.type, M.d.n); var bn = $("#f-bname"); if(bn) bn.value = M.d.name; }
+      var bp = $("#f-bprev"); if(bp) bp.innerHTML = bonusPrev(M.d);
+    }
+    if(t.id === "f-day") checkNoTradeDup();
   });
   document.addEventListener("keydown", function(e){
     if(e.key === "Escape" && M){ closeSheet(); render(); }
     if(e.key === "Enter" && e.target.id === "f-title"){ e.preventDefault(); saveRule(); }
+    if(e.key === "Enter" && e.target.id === "f-bname"){ e.preventDefault(); saveBonus(); }
   });
   document.addEventListener("pointerdown", function(e){ var g = e.target.closest && e.target.closest("[data-grip]"); if(g) dragStart(e, g); });
   document.addEventListener("pointermove", function(e){ if(DRAG) dragMove(e); }, {passive:false});
@@ -760,7 +1113,7 @@ function pwa(){
 }
 
 function init(){ load(); bind(); render(); pwa(); }
-window.__app = {state:function(){ return JSON.parse(JSON.stringify(S)); }, balance:balance, streaks:streaks, ranking:ranking, quote:function(){ return ruleQuote(S.trades); }, exportPayload:exportPayload, importData:importData, reload:function(){ load(); render(); }};
+window.__app = {state:function(){ return JSON.parse(JSON.stringify(S)); }, balance:balance, progress:function(){ return bonusRules(true).map(function(b){ var p = bonusProgress(b); p.name = b.name; return p; }); }, streaks:streaks, ranking:ranking, quote:function(){ return ruleQuote(S.trades); }, exportPayload:exportPayload, importData:importData, reload:function(){ load(); render(); }};
 if(document.readyState === "loading") document.addEventListener("DOMContentLoaded", init); else init();
 })();
 
