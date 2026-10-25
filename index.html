@@ -221,6 +221,16 @@ html[data-theme="light"]{--gold:#d97706;--goldbg:rgba(217,119,6,.12);--ntc:#7c3a
 .pill.win{background:var(--okbg);color:var(--ok)}.pill.loss{background:var(--badbg);color:var(--bad)}
 .seg2.res button.on.win{color:var(--ok)}.seg2.res button.on.loss{color:var(--bad)}
 .seg2.rsub{margin:6px 0 4px}
+.pnlrow{display:flex;align-items:center;gap:6px}
+.pnlrow .pm{width:48px;height:48px;flex:none;border-radius:12px;background:var(--card2);border:1px solid var(--line);font-size:20px;font-weight:700;color:var(--text)}
+.pnlrow .inp{flex:1;min-width:0;font-weight:700;font-variant-numeric:tabular-nums}
+.pnlrow .inp.bad{border-color:var(--bad)}
+.pnlrow .cur{color:var(--muted);font-weight:600;padding:0 4px}
+.note.neg{color:var(--bad)}
+.pnlv{display:flex;align-items:baseline;gap:10px;margin:8px 0 2px}.pnlv b{font-size:17px;font-variant-numeric:tabular-nums}
+.gv{font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}.gv.pos{color:var(--ok)}.gv.neg{color:var(--bad)}
+.bon .bar.dim{opacity:.35}
+.bon.per .bc .nw{white-space:nowrap}
 .seg2.rsub button{display:flex;align-items:center;justify-content:center;gap:6px}
 .seg2.rsub svg{width:16px;height:16px;color:var(--gold)}
 .seg2.rsub i{font-style:normal;font-size:12px;color:var(--faint)}
@@ -262,8 +272,8 @@ html[data-theme="light"]{--gold:#d97706;--goldbg:rgba(217,119,6,.12);--ntc:#7c3a
 (function(){
 var KEY = "regelkonto";
 var UIKEY = "regelkonto-ui";
-var SCHEMA = 2;
-var VERSION = "2.0";
+var SCHEMA = 3;
+var VERSION = "2.1";
 var CATS = ["Vor dem Trade", "Im Trade", "Nach dem Trade", "Allgemein"];
 var WDS = ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"];
 
@@ -292,7 +302,8 @@ function uid(p){ return p + "_" + Date.now().toString(36) + Math.random().toStri
 function r2(v){ return Math.round(v * 100) / 100; }
 function num(v, def, lo, hi){ v = parseFloat(String(v).replace(",", ".")); if(!isFinite(v)) v = def; return r2(Math.max(lo, Math.min(hi, v))); }
 var NF = new Intl.NumberFormat("de-DE", {minimumFractionDigits:0, maximumFractionDigits:2});
-function eur(v){ return NF.format(Math.abs(r2(v))) + " €"; }
+var NF2 = new Intl.NumberFormat("de-DE", {minimumFractionDigits:2, maximumFractionDigits:2});
+function eur(v){ var x = Math.abs(r2(v)); return (x % 1 ? NF2 : NF).format(x) + " €"; }
 function money(v){ return (v < 0 ? "−" : "") + eur(v); }
 function signed(v){ return (v > 0 ? "+" : v < 0 ? "−" : "±") + eur(v); }
 function cls(v){ return v > 0 ? "pos" : v < 0 ? "neg" : ""; }
@@ -312,16 +323,47 @@ var BTYPES = {
   notrade:{label:"Kein-Trade-Tage in Folge", short:"Kein-Trade-Tage in Folge", unit:"Tage", hint:"Zählt Kein-Trade-Tage. Jeder Trade beendet die Serie."},
   cleantotal:{label:"Regelkonform insgesamt", short:"regelkonforme Trades insgesamt", unit:"Trades", hint:"Zählt jeden Trade ohne Regelbruch, auch mit Unterbrechungen."}
 };
-var BORDER = ["clean", "win", "notrade", "cleantotal"];
+var PHINT = " Gebucht wird erst, wenn der Zeitraum vorbei ist, mit Datum des letzten Tages. N = 1: jeder Zeitraum gibt Bonus; N > 1: Bonus nach N Zeiträumen in Folge.";
+BTYPES.wplus = {per:"w", kind:"plus", label:"Woche im Plus", short:"Wochen im Plus", unit:"Wochen", hint:"Summe der G/V-Beträge von Mo bis So größer 0 €. Trades ohne Betrag zählen nicht. Wochen ohne Trade mit Betrag zählen nicht und unterbrechen keine Serie." + PHINT};
+BTYPES.wclean = {per:"w", kind:"clean", label:"Woche ohne Regelbruch", short:"Wochen ohne Regelbruch", unit:"Wochen", hint:"Mindestens ein Trade von Mo bis So und kein „Gebrochen“. Wochen ohne Trade zählen nur, wenn die Option unten an ist und du darin einen Kein-Trade-Tag erfasst hast; sonst unterbrechen sie die Serie nicht." + PHINT};
+BTYPES.mplus = {per:"m", kind:"plus", label:"Monat im Plus", short:"Monate im Plus", unit:"Monate", hint:"Summe der G/V-Beträge im Kalendermonat größer 0 €. Trades ohne Betrag zählen nicht. Monate ohne Trade mit Betrag zählen nicht und unterbrechen keine Serie." + PHINT};
+BTYPES.mclean = {per:"m", kind:"clean", label:"Monat ohne Regelbruch", short:"Monate ohne Regelbruch", unit:"Monate", hint:"Mindestens ein Trade im Kalendermonat und kein „Gebrochen“. Monate ohne Trade zählen nur, wenn die Option unten an ist und du darin einen Kein-Trade-Tag erfasst hast; sonst unterbrechen sie die Serie nicht." + PHINT};
+var BORDER = ["clean", "win", "notrade", "cleantotal", "wplus", "wclean", "mplus", "mclean"];
+var MONS = ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"];
+function isPer(type){ return !!(BTYPES[type] && BTYPES[type].per); }
+/* Zeiträume in lokaler Zeit (Europe/Berlin): ISO-Wochen Mo–So, Kalendermonate */
+function perStart(ts, p){ var d = new Date(ts); return p === "w" ? new Date(d.getFullYear(), d.getMonth(), d.getDate() - (d.getDay() + 6) % 7).getTime() : new Date(d.getFullYear(), d.getMonth(), 1).getTime(); }
+function perNext(st, p){ var d = new Date(st); return p === "w" ? new Date(d.getFullYear(), d.getMonth(), d.getDate() + 7).getTime() : new Date(d.getFullYear(), d.getMonth() + 1, 1).getTime(); }
+function isoWeek(ts){ var d = new Date(ts), t = new Date(d.getFullYear(), d.getMonth(), d.getDate() + 3 - (d.getDay() + 6) % 7), y = t.getFullYear(), j = new Date(y, 0, 4);
+  return {y:y, w:1 + Math.round(((t - j) / 864e5 - 3 + (j.getDay() + 6) % 7) / 7)}; }
+function perKey(st, p){ if(p === "w"){ var w = isoWeek(st); return "W" + w.y + "-" + pad(w.w); } var d = new Date(st); return "M" + d.getFullYear() + "-" + pad(d.getMonth() + 1); }
+function perKeyLabel(k){ var m = /^([WM])(\d{4})-(\d\d)$/.exec(k || ""); if(!m) return ""; return m[1] === "W" ? "KW " + (+m[3]) + "/" + m[2] : MONS[+m[3] - 1] + " " + m[2]; }
+function parsePnl(v){
+  if(v == null) return null;
+  if(typeof v === "number") return isFinite(v) ? r2(Math.max(-1e9, Math.min(1e9, v))) : null;
+  var s = String(v).replace(/[\s€\u00a0\u202f]/g, "").replace(/[−–]/g, "-");
+  if(!s) return null;
+  if(s.indexOf(",") >= 0) s = s.replace(/\./g, "").replace(",", ".");
+  else if(/^[+-]?\d{1,3}(\.\d{3})+$/.test(s)) s = s.replace(/\./g, "");
+  if(!/^[+-]?(\d+(\.\d*)?|\.\d+)$/.test(s)) return NaN;
+  var n = parseFloat(s); return isFinite(n) && Math.abs(n) <= 1e9 ? r2(n) : NaN;
+}
+function resOfPnl(v){ return v > 0 ? "win" : v < 0 ? "loss" : "be"; }
 var RES = {win:"Gewinn", loss:"Verlust", be:"Break-even"};
 function dayKey(ts){ var d = new Date(ts); return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate()); }
 function fromDayKey(s, h){ var m = /^(\d{4})-(\d\d)-(\d\d)$/.exec(s || ""); if(!m) return null; return new Date(+m[1], +m[2] - 1, +m[3], h || 0, 0).getTime(); }
 function dayStart(ts){ var d = new Date(ts); d.setHours(0, 0, 0, 0); return d.getTime(); }
-function autoName(type, n){ return n + " " + BTYPES[type].short; }
+function autoName(type, n){ return isPer(type) ? (n === 1 ? BTYPES[type].label : n + " " + BTYPES[type].short + " in Folge") : n + " " + BTYPES[type].short; }
 function defBonus(since){
   var now = Date.now();
   return [{id:uid("x") + "0", name:"3 Gewinn-Trades in Folge", type:"win", n:3, amount:25, active:true, order:1, since:since, createdAt:now},
           {id:uid("x") + "1", name:"10 regelkonforme Trades in Folge", type:"clean", n:10, amount:100, active:true, order:2, since:since, createdAt:now}];
+}
+/* Zeitraum-Boni (ab v2.1): zählen ab "since", es wird nichts rückwirkend gebucht */
+function defPeriod(since, order){
+  var now = Date.now();
+  return [["wplus", 30], ["wclean", 50], ["mplus", 100], ["mclean", 200]].map(function(x, i){
+    return {id:uid("x") + "p" + i, name:BTYPES[x[0]].label, type:x[0], n:1, amount:x[1], active:true, order:order + i, since:since, ntok:false, createdAt:now}; });
 }
 function blank(){
   var now = Date.now();
@@ -333,7 +375,7 @@ function blank(){
   ];
   return {schema:SCHEMA, settings:{start:1000, defPlus:5, defMinus:10, noTrade:50},
     rules:def.map(function(r, i){ return {id:uid("r") + i, title:r[0], cat:r[1], plus:5, minus:10, active:true, order:i + 1, createdAt:now}; }),
-    trades:[], bookings:[], notrade:[], bonusRules:defBonus(0), awards:[], meta:{lastExport:null, lastImport:null, created:now}};
+    trades:[], bookings:[], notrade:[], bonusRules:defBonus(0).concat(defPeriod(now, 3)), awards:[], meta:{lastExport:null, lastImport:null, created:now}};
 }
 function normRule(r, i){
   return {id:String(r.id || uid("r")), title:String(r.title || "Regel").slice(0, 200), cat:CATS.indexOf(r.cat) >= 0 ? r.cat : "Allgemein",
@@ -341,7 +383,9 @@ function normRule(r, i){
 }
 function normTrade(t){
   var items = (Array.isArray(t.items) ? t.items : []).map(function(x){ return {ruleId:String(x.ruleId || ""), title:String(x.title || ""), cat:CATS.indexOf(x.cat) >= 0 ? x.cat : "Allgemein", plus:num(x.plus, 0, 0, 100000), minus:num(x.minus, 0, 0, 100000), ok:x.ok === true ? true : x.ok === false ? false : x.ok === "na" ? "na" : null}; });
-  var o = {id:String(t.id || uid("t")), ts:+t.ts || Date.now(), instrument:String(t.instrument || "").slice(0, 60), note:String(t.note || "").slice(0, 2000), items:items, result:RES[t.result] ? t.result : null, updatedAt:+t.updatedAt || Date.now()};
+  var pnl = parsePnl(t.pnl); if(pnl !== pnl) pnl = null;
+  var o = {id:String(t.id || uid("t")), ts:+t.ts || Date.now(), instrument:String(t.instrument || "").slice(0, 60), note:String(t.note || "").slice(0, 2000), items:items, result:RES[t.result] ? t.result : null, pnl:pnl, updatedAt:+t.updatedAt || Date.now()};
+  if(pnl != null) o.result = resOfPnl(pnl); /* Betrag gewinnt bei Widerspruch */
   o.total = tradeTotal(o); return o;
 }
 function normBooking(b){ return {id:String(b.id || uid("b")), ts:+b.ts || Date.now(), amount:num(b.amount, 0, -10000000, 10000000), note:String(b.note || "").slice(0, 300)}; }
@@ -350,9 +394,9 @@ function normNoTrade(n){
   return {id:String(n.id || uid("n")), day:day, ts:fromDayKey(day, 12), note:String(n.note || "").slice(0, 300), amount:num(n.amount, 50, 0, 10000000), createdAt:+n.createdAt || Date.now()};
 }
 function normBonusRule(b, i){
-  var type = BORDER.indexOf(b.type) >= 0 ? b.type : "clean", n = Math.round(num(b.n, 3, 1, 1000));
+  var type = BORDER.indexOf(b.type) >= 0 ? b.type : "clean", n = Math.round(num(b.n, isPer(type) ? 1 : 3, 1, 1000));
   return {id:String(b.id || uid("x")), name:String(b.name || autoName(type, n)).slice(0, 120), type:type, n:n, amount:num(b.amount, 0, 0, 10000000),
-    active:b.active !== false, order:+b.order || i + 1, since:+b.since || 0, createdAt:+b.createdAt || Date.now()};
+    active:b.active !== false, order:+b.order || i + 1, since:+b.since || 0, ntok:!!b.ntok, createdAt:+b.createdAt || Date.now()};
 }
 function normAward(a){
   return {key:String(a.key), bonusId:String(a.bonusId || ""), triggerId:String(a.triggerId || ""), ts:+a.ts || 0, count:+a.count || 0, n:+a.n || 0,
@@ -363,14 +407,19 @@ function migrate(d){
   var st = d.settings || {}, days = {};
   /* v1 → v2: Regeln, Trades und Buchungen bleiben unverändert. Vorbelegte Bonus-Regeln zählen erst ab jetzt, damit sich der Kontostand nicht ändert. */
   var nt = (Array.isArray(d.notrade) ? d.notrade : []).map(normNoTrade).filter(function(n){ if(days[n.day]) return false; days[n.day] = 1; return true; });
+  var br = Array.isArray(d.bonusRules) ? d.bonusRules.map(normBonusRule) : defBonus(Date.now());
+  /* v2 → v3: vier Zeitraum-Boni anhängen (einmalig), bestehende Boni und Reihenfolge bleiben */
+  if((+d.schema || 1) < 3 && !br.some(function(b){ return isPer(b.type); })) br = br.concat(defPeriod(Date.now(), br.reduce(function(m, b){ return Math.max(m, b.order); }, 0) + 1));
   return {schema:SCHEMA, settings:{start:num(st.start, 1000, -10000000, 10000000), defPlus:num(st.defPlus, 5, 0, 100000), defMinus:num(st.defMinus, 10, 0, 100000), noTrade:num(st.noTrade, 50, 0, 10000000)},
     rules:d.rules.map(normRule), trades:d.trades.map(normTrade), bookings:(d.bookings || []).map(normBooking),
-    notrade:nt, bonusRules:Array.isArray(d.bonusRules) ? d.bonusRules.map(normBonusRule) : defBonus(Date.now()),
+    notrade:nt, bonusRules:br,
     awards:(Array.isArray(d.awards) ? d.awards : []).map(normAward), meta:d.meta && typeof d.meta === "object" ? {lastExport:d.meta.lastExport || null, lastImport:d.meta.lastImport || null, created:d.meta.created || Date.now()} : {lastExport:null, lastImport:null, created:Date.now()}};
 }
+var LOADR = null;
 function load(){
   var raw = null; try { raw = localStorage.getItem(KEY); } catch(e) {}
-  if(raw){ try { var old = JSON.parse(raw); S = migrate(old); recalcBonuses(); if(+old.schema !== SCHEMA){ try { localStorage.setItem(KEY + "-v" + (old.schema || 1) + "-backup", raw); } catch(x) {} save(); } } catch(e) { S = blank(); try { localStorage.setItem(KEY + "-defekt-" + Date.now(), raw); } catch(x) {} } }
+  LOADR = null;
+  if(raw){ try { var old = JSON.parse(raw); S = migrate(old); LOADR = recalcBonuses(); if(+old.schema !== SCHEMA){ try { localStorage.setItem(KEY + "-v" + (old.schema || 1) + "-backup", raw); } catch(x) {} save(); } else if(LOADR.added.length || LOADR.removed.length) save(); } catch(e) { S = blank(); try { localStorage.setItem(KEY + "-defekt-" + Date.now(), raw); } catch(x) {} } }
   else { S = blank(); save(); }
   try { var u = JSON.parse(localStorage.getItem(UIKEY) || "{}"); if(u.tab) UI.tab = u.tab; if(u.theme) UI.theme = u.theme; if(u.rsub) UI.rsub = u.rsub; } catch(e) {}
   if(["ov", "hist", "rules"].indexOf(UI.tab) < 0) UI.tab = "ov";
@@ -402,7 +451,33 @@ function timeline(){
     .sort(function(a, b){ return a.ts - b.ts || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0); });
 }
 function isClean(t){ return !brokenOf(t).length; }
+/* Zeitraum-Bonus: true = erfüllt, false = verfehlt (Serie endet), null = zählt nicht (z. B. kein Trade mit Betrag) */
+function perStats(b, es){
+  var o = {nt:0, br:0, pn:0, sum:0, nn:0};
+  es.forEach(function(e){ if(e.k === "n"){ o.nn++; return; } o.nt++; if(!isClean(e.t)) o.br++; if(e.t.pnl != null){ o.pn++; o.sum = r2(o.sum + e.t.pnl); } });
+  return o;
+}
+function perQual(b, o){
+  if(BTYPES[b.type].kind === "plus") return o.pn ? o.sum > 0 : null;
+  if(o.nt) return o.br === 0;
+  return b.ntok && o.nn ? true : null;
+}
+function scanPeriod(b, tl){
+  var p = BTYPES[b.type].per, now = Date.now(), es = tl.filter(function(e){ return e.ts >= b.since; });
+  var count = 0, aw = [], i = 0, st = perStart(Math.max(b.since, es.length ? Math.min(es[0].ts, now) : now), p), nx;
+  while((nx = perNext(st, p)) <= now){
+    var cur = [];
+    while(i < es.length && es[i].ts < nx){ if(es[i].ts >= st) cur.push(es[i]); i++; }
+    var q = perQual(b, perStats(b, cur));
+    if(q === true){ count++; if(count % b.n === 0){ var k = perKey(st, p); aw.push({key:b.id + "|" + k + "|" + count, bonusId:b.id, triggerId:k, ts:nx - 1, count:count}); } }
+    else if(q === false) count = 0;
+    st = nx;
+  }
+  var ce = es.filter(function(e){ return e.ts >= st && e.ts < nx; });
+  return {count:count, awards:aw, per:{start:st, end:nx, stats:perStats(b, ce), q:perQual(b, perStats(b, ce))}};
+}
 function scanBonus(b, tl){
+  if(isPer(b.type)) return scanPeriod(b, tl || timeline());
   var count = 0, total = 0, aw = [];
   (tl || timeline()).forEach(function(e){
     if(e.ts < b.since) return;
@@ -526,21 +601,59 @@ function tradeRowHTML(t){
   var br = brokenOf(t), open = t.items.filter(function(x){ return x.ok == null; }).length, na = t.items.filter(function(x){ return x.ok === "na"; }).length;
   var kept = t.items.length - na - open;
   var sub = (br.length ? '<span class="brk">' + br.length + ' gebrochen: ' + esc(br.map(function(x){ return x.title; }).join(", ")) + '</span>' : '<span class="okt">' + (na ? kept + ' von ' + kept + ' eingehalten' : 'Alle ' + t.items.length + ' Regeln eingehalten') + '</span>');
-  return '<button class="trow" data-trade="' + esc(t.id) + '"><span class="badge ' + (br.length ? "bad" : "ok") + '">' + uic(br.length ? "x" : "check") + '</span><span class="ht"><b>' + fmtTime(t.ts) + (t.instrument ? ' <span class="dot">·</span> ' + esc(t.instrument) : '') + resPill(t.result) + '</b><small>' + sub + (na ? ' · ' + na + ' n. a.' : '') + (open ? ' · ' + open + ' offen' : '') + '</small></span><span class="v ' + cls(t.total) + '">' + signed(t.total) + '</span></button>';
+  return '<button class="trow" data-trade="' + esc(t.id) + '"><span class="badge ' + (br.length ? "bad" : "ok") + '">' + uic(br.length ? "x" : "check") + '</span><span class="ht"><b>' + fmtTime(t.ts) + (t.instrument ? ' <span class="dot">·</span> ' + esc(t.instrument) : '') + resPill(t.result) + '</b><small>' + (t.pnl != null ? '<span class="gv ' + cls(t.pnl) + '">G/V ' + signed(t.pnl) + '</span> · ' : '') + sub + (na ? ' · ' + na + ' n. a.' : '') + (open ? ' · ' + open + ' offen' : '') + '</small></span><span class="v ' + cls(t.total) + '">' + signed(t.total) + '</span></button>';
 }
 function noTradeRowHTML(n){
   return '<button class="trow" data-nt="' + esc(n.id) + '"><span class="badge nt">' + uic("moon") + '</span><span class="ht"><b>Kein Trade</b><small>' + esc(n.note || "Tag ohne Trade") + '</small></span><span class="v ' + cls(n.amount) + '">' + signed(n.amount) + '</span></button>';
 }
+function awardSub(a){
+  if(isPer(a.type)) return esc(perKeyLabel(a.triggerId)) + ' · ' + esc(BTYPES[a.type].label) + (a.n > 1 ? ' · ' + a.count + ' in Folge' : '');
+  return a.count + ' ' + esc(BTYPES[a.type].short) + ' erreicht';
+}
 function awardRowHTML(a){
-  return '<button class="trow bonus" data-award="' + esc(a.key) + '"><span class="badge gold">' + uic("star") + '</span><span class="ht"><b>Bonus <span class="dot">·</span> ' + esc(a.name) + '</b><small>' + a.count + ' ' + esc(BTYPES[a.type].short) + ' erreicht</small></span><span class="v pos">' + signed(a.amount) + '</span></button>';
+  return '<button class="trow bonus" data-award="' + esc(a.key) + '"><span class="badge gold">' + uic("star") + '</span><span class="ht"><b>Bonus <span class="dot">·</span> ' + esc(a.name) + '</b><small>' + awardSub(a) + '</small></span><span class="v pos">' + signed(a.amount) + '</span></button>';
 }
 function bonusProgress(b){
   var sc = scanBonus(b), c = sc.count, cur = c % b.n;
-  return {count:c, cur:cur, n:b.n, times:sc.awards.length, label:cur + "/" + b.n + " " + BTYPES[b.type].short};
+  var o = {count:c, cur:cur, n:b.n, times:sc.awards.length, label:cur + "/" + b.n + " " + BTYPES[b.type].short};
+  if(sc.per){ o.per = sc.per; o.text = perText(b, o); o.label = o.text; }
+  return o;
+}
+var WDL = ["Sonntag", "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag"];
+function perText(b, p){
+  var T = BTYPES[b.type], w = T.per === "w", x = p.per.stats, q = p.per.q, last = p.per.end - 1, parts = [];
+  var due = w ? "Bonus am Sonntag" : "Bonus am " + pad(new Date(last).getDate()) + "." + pad(new Date(last).getMonth() + 1) + ".";
+  var next = (p.count + 1) % b.n;
+  var head = w ? "Diese Woche: " : "Dieser Monat: ";
+  if(T.kind === "plus"){
+    parts.push(x.pn ? '<b class="' + cls(x.sum) + '">' + signed(x.sum) + '</b> G/V' : 'noch kein Trade mit G/V');
+    if(x.pn && !q) parts.push('noch nicht im Plus');
+  } else {
+    if(x.nt) parts.push(x.br ? '<b class="neg">' + x.br + (x.br === 1 ? ' Trade' : ' Trades') + ' mit Regelbruch</b>' : x.nt + (x.nt === 1 ? ' Trade' : ' Trades') + ' · noch kein Regelbruch');
+    else parts.push(b.ntok && x.nn ? 'kein Trade · ' + x.nn + '× Kein-Trade (zählt mit)' : 'noch kein Trade');
+  }
+  if(q === true) parts.push(b.n === 1 || next === 0 ? due : 'dann ' + next + '/' + b.n + ' in Folge');
+  else if(q === false && T.kind === "clean") parts.push(w ? 'kein Bonus diese Woche' : 'kein Bonus diesen Monat');
+  return head + parts.map(function(t){ return '<span class="nw">' + t + '</span>'; }).join('<span class="dot">·</span><wbr>');
+}
+function perProgressHTML(bs){
+  if(!bs.length) return '';
+  var now = Date.now();
+  var h = '<div class="card span"><div class="ctitle">' + uic("star") + 'Woche &amp; Monat<span class="grow"></span><button class="lnk" data-action="goto-bonus">Boni</button></div><div class="bons" id="perprog">';
+  bs.forEach(function(b){
+    var p = bonusProgress(b), f = Math.max(0, Math.min(1, (now - p.per.start) / (p.per.end - p.per.start)));
+    h += '<div class="bon per" data-bid="' + esc(b.id) + '"><div class="bt"><b>' + esc(b.name) + '</b><span class="pos">+' + eur(b.amount) + '</span></div>' +
+      '<div class="bc">' + p.text + '</div>' +
+      '<span class="bar gold' + (p.per.q === false ? ' dim' : '') + '"><i style="width:' + Math.round(f * 100) + '%"></i></span>' +
+      '<small>' + (BTYPES[b.type].per === "w" ? 'KW ' + isoWeek(p.per.start).w + ' · ' + fmtDate(p.per.start).slice(0, 6) + '–' + fmtDate(p.per.end - 1) : MONS[new Date(p.per.start).getMonth()] + ' ' + new Date(p.per.start).getFullYear()) +
+      (b.n > 1 ? ' · Serie ' + p.cur + '/' + b.n : '') + (p.times ? ' · ' + p.times + '× erreicht' : '') + '</small></div>';
+  });
+  return h + '</div></div>';
 }
 function bonusProgressHTML(){
-  var bs = bonusRules(true);
-  if(!bs.length) return '';
+  var all = bonusRules(true), bs = all.filter(function(b){ return !isPer(b.type); });
+  var ph = perProgressHTML(all.filter(function(b){ return isPer(b.type); }));
+  if(!bs.length) return ph;
   var h = '<div class="card span"><div class="ctitle">' + uic("star") + 'Bonus-Fortschritt<span class="grow"></span><button class="lnk" data-action="goto-bonus">Boni</button></div><div class="bons" id="bonusprog">';
   bs.forEach(function(b){
     var p = bonusProgress(b);
@@ -549,7 +662,7 @@ function bonusProgressHTML(){
       '<span class="bar gold"><i style="width:' + Math.round(p.cur / p.n * 100) + '%"></i></span>' +
       '<small>' + (b.type === "cleantotal" ? 'insgesamt ' + p.count : 'aktuelle Serie ' + p.count) + (p.times ? ' · ' + p.times + '× erreicht' : '') + '</small></div>';
   });
-  return h + '</div></div>';
+  return ph + h + '</div></div>';
 }
 function bookingRowHTML(b){
   return '<button class="trow" data-book="' + esc(b.id) + '"><span class="badge man">' + uic("coin") + '</span><span class="ht"><b>' + fmtTime(b.ts) + ' <span class="dot">·</span> Manuelle Buchung</b><small>' + esc(b.note || "ohne Notiz") + '</small></span><span class="v ' + cls(b.amount) + '">' + signed(b.amount) + '</span></button>';
@@ -583,7 +696,7 @@ function rsubHTML(){
 function bonusRowHTML(b){
   var p = b.active ? bonusProgress(b) : null;
   return '<div class="hrow' + (b.active ? "" : " off") + '" data-bid="' + esc(b.id) + '">' + gripHTML() + '<span class="badge gold sm">' + uic("star") + '</span>' +
-    '<button class="hname" data-action="edit-bonus" data-id="' + esc(b.id) + '"><span class="ht"><b>' + esc(b.name) + '</b><small><span class="nw">' + esc(b.name === autoName(b.type, b.n) ? BTYPES[b.type].label : autoName(b.type, b.n)) + '</span><span class="dot">·</span><wbr><span class="amt pos nw">+' + eur(b.amount) + '</span><span class="dot">·</span><wbr><span class="nw">zählt ab ' + (b.since ? fmtDate(b.since) : 'Beginn') + '</span>' + (p ? '<span class="dot">·</span><wbr><span class="nw">' + p.cur + '/' + p.n + '</span>' : '<span class="dot">·</span><wbr>inaktiv') + '</small></span></button>' +
+    '<button class="hname" data-action="edit-bonus" data-id="' + esc(b.id) + '"><span class="ht"><b>' + esc(b.name) + '</b><small><span class="nw">' + esc(b.name === autoName(b.type, b.n) ? BTYPES[b.type].label : autoName(b.type, b.n)) + '</span><span class="dot">·</span><wbr><span class="amt pos nw">+' + eur(b.amount) + '</span><span class="dot">·</span><wbr><span class="nw">zählt ab ' + (b.since ? fmtDate(b.since) : 'Beginn') + '</span>' + (p ? '<span class="dot">·</span><wbr><span class="nw">' + (p.per ? (p.n > 1 ? 'Serie ' + p.cur + '/' + p.n : p.times + '× erreicht') : p.cur + '/' + p.n) + '</span>' : '<span class="dot">·</span><wbr>inaktiv') + '</small></span></button>' +
     '<label class="switch mini" title="Aktiv/inaktiv"><input type="checkbox" data-btoggle="' + esc(b.id) + '"' + (b.active ? " checked" : "") + ' aria-label="Bonus aktiv"><span class="sw"></span></label></div>';
 }
 function bonusHTML(){
@@ -664,7 +777,7 @@ function toggleRule(id, on){ var r = ruleById(id); if(!r) return; r.active = on;
 function tradeSheet(id){
   var t = id ? tradeById(id) : null;
   if(!t && !rules(true).length){ toast("Lege zuerst mindestens eine aktive Regel an."); UI.tab = "rules"; saveUI(); render(); return; }
-  M = {type:"trade", id:t ? t.id : null, d:t ? JSON.parse(JSON.stringify(t)) : {ts:Date.now(), instrument:"", note:"", result:null, items:rules(true).map(function(r){ return {ruleId:r.id, title:r.title, cat:r.cat, plus:r.plus, minus:r.minus, ok:null}; })}};
+  M = {type:"trade", pnlBad:false, id:t ? t.id : null, d:t ? JSON.parse(JSON.stringify(t)) : {ts:Date.now(), instrument:"", note:"", result:null, pnl:null, items:rules(true).map(function(r){ return {ruleId:r.id, title:r.title, cat:r.cat, plus:r.plus, minus:r.minus, ok:null}; })}};
   drawTradeSheet();
 }
 function readTradeForm(){
@@ -672,13 +785,19 @@ function readTradeForm(){
   var a = $("#f-ts"), b = $("#f-inst"), c = $("#f-note");
   if(a){ var v = fromLocalInput(a.value); if(v) M.d.ts = v; }
   if(b) M.d.instrument = b.value.trim(); if(c) M.d.note = c.value;
+  var g = $("#f-pnl");
+  if(g){ var v = parsePnl(g.value); M.pnlBad = v !== v; M.d.pnl = M.pnlBad ? null : v; if(M.d.pnl != null) M.d.result = resOfPnl(M.d.pnl); }
 }
+function pnlInput(v){ return v == null ? "" : String(v).replace(".", ","); }
 function drawTradeSheet(){
   var d = M.d, edit = !!M.id;
   var insts = []; S.trades.forEach(function(t){ if(t.instrument && insts.indexOf(t.instrument) < 0) insts.push(t.instrument); });
   var h = top(edit ? "Trade bearbeiten" : "Trade erfassen");
   h += '<div class="two tw"><div><label class="lab" for="f-ts">Datum &amp; Uhrzeit</label><input id="f-ts" class="inp" type="datetime-local" value="' + toLocalInput(d.ts) + '"></div>' +
     '<div><label class="lab" for="f-inst">Instrument</label><input id="f-inst" class="inp" list="insts" maxlength="60" placeholder="optional, z. B. ES" autocomplete="off" value="' + esc(d.instrument) + '"><datalist id="insts">' + insts.map(function(x){ return '<option value="' + esc(x) + '">'; }).join("") + '</datalist></div></div>';
+  h += '<label class="lab" for="f-pnl">G/V in € <span class="muted">(optional, echter Gewinn/Verlust)</span></label>' +
+    '<div class="pnlrow"><button class="pm" data-action="pnl-sign" aria-label="Vorzeichen wechseln" title="Vorzeichen wechseln">±</button><input id="f-pnl" class="inp" type="text" inputmode="decimal" autocomplete="off" enterkeyhint="done" maxlength="16" placeholder="z. B. 120,50 oder -80" value="' + esc(pnlInput(d.pnl)) + '"><span class="cur">€</span></div>' +
+    '<p class="note" id="f-pnlhint"></p>';
   h += '<label class="lab">Ergebnis <span class="muted">(optional, für Gewinn-Serien)</span></label>' + resSegHTML(d.result, "data-res");
   h += '<div class="allbar"><b class="grow">' + d.items.length + ' Regeln bewerten</b><button class="btn sm" data-action="all-ok" id="f-allok">' + uic("check") + ' Alle eingehalten</button></div>';
   var cats = CATS.filter(function(c){ return d.items.some(function(x){ return x.cat === c; }); });
@@ -711,12 +830,16 @@ function updateTradeUI(){
   var tot = tradeTotal(d), br = d.items.filter(function(x){ return x.ok === false; }).length;
   var t = $("#f-total"); t.textContent = signed(tot); t.className = cls(tot);
   $("#f-open").textContent = open ? open + " von " + d.items.length + " noch offen" : (br ? br + " gebrochen" : "Alles eingehalten") + (na ? " · " + na + " n.\u202fa." : "") + " · Saldo";
-  var s = $("#f-save"); s.disabled = open > 0; s.textContent = M.id ? "Speichern" : "Buchen";
+  var s = $("#f-save"); s.disabled = open > 0 || M.pnlBad; s.textContent = M.id ? "Speichern" : "Buchen";
+  var ph = $("#f-pnlhint"), pi = $("#f-pnl");
+  if(ph){ ph.className = "note" + (M.pnlBad ? " neg" : ""); ph.textContent = M.pnlBad ? "Ungültiger Betrag. Erlaubt: 120,50 oder -80" : d.pnl != null ? "Ergebnis aus Betrag: " + RES[d.result] + (d.pnl ? " (" + signed(d.pnl) + ")" : "") : "Mit Betrag zählt der Trade für „Woche/Monat im Plus“."; }
+  if(pi) pi.classList.toggle("bad", !!M.pnlBad);
 }
 function answer(i, v){ readTradeForm(); var x = M.d.items[i]; if(!x) return; x.ok = x.ok === v ? null : v; updateTradeUI();
   if(navigator.vibrate){ try { navigator.vibrate(8); } catch(e) {} } }
 function saveTrade(){
   readTradeForm(); var d = M.d;
+  if(M.pnlBad){ toast("G/V-Betrag ungültig. Beispiel: 120,50 oder -80"); var pf = $("#f-pnl"); if(pf) pf.focus(); return; }
   var open = d.items.filter(function(x){ return x.ok == null; }).length;
   if(open){ toast("Bitte bewerte noch " + open + (open === 1 ? " Regel." : " Regeln.")); var f = document.querySelector(".rq:not(.ok):not(.bad):not(.na)"); if(f) f.scrollIntoView({behavior:"smooth", block:"center"}); return; }
   d.updatedAt = Date.now();
@@ -745,7 +868,8 @@ function tradeDetail(id){
   var h = top("Trade vom " + fmtDate(t.ts));
   h += '<div class="muted small">' + fmtTime(t.ts) + ' Uhr' + (t.instrument ? ' · ' + esc(t.instrument) : '') + '</div>';
   h += '<div class="dsum"><b class="' + cls(t.total) + '">' + signed(t.total) + '</b><span class="muted small">' + kept + ' eingehalten · ' + br + ' gebrochen' + (na ? ' · ' + na + ' nicht anwendbar' : '') + '</span></div>';
-  h += '<label class="lab">Ergebnis</label>' + resSegHTML(t.result, "data-dres");
+  h += '<div class="pnlv"><span class="muted small">G/V</span>' + (t.pnl != null ? '<b class="' + cls(t.pnl) + '" id="d-pnl">' + signed(t.pnl) + '</b>' : '<span class="muted small" id="d-pnl">kein Betrag erfasst</span>') + '<span class="grow"></span><button class="lnk" data-action="edit-trade">' + (t.pnl != null ? 'ändern' : 'eintragen') + '</button></div>';
+  h += '<label class="lab">Ergebnis' + (t.pnl != null ? ' <span class="muted">(aus G/V)</span>' : '') + '</label>' + resSegHTML(t.result, "data-dres");
   h += '<div class="card" style="padding:4px 12px">' + t.items.map(function(x){
     var v = x.ok === true ? x.plus : x.ok === false ? -x.minus : 0;
     return '<div class="drow"><span class="badge ' + (x.ok === true ? "ok" : x.ok === false ? "bad" : "man") + '">' + uic(x.ok === false ? "x" : x.ok === true ? "check" : "minus") + '</span><span class="ht"><b style="font-weight:500;font-size:14.5px">' + esc(x.title) + '</b>' + (x.ok === "na" ? '<small>nicht anwendbar</small>' : '') + '</span><span class="amt ' + cls(v) + '">' + signed(v) + '</span></div>';
@@ -758,6 +882,7 @@ function tradeDetail(id){
 }
 function setResult(id, r){
   var t = tradeById(id); if(!t) return;
+  if(t.pnl != null){ if(r !== t.result) toast("Ergebnis folgt dem G/V-Betrag (" + signed(t.pnl) + "). Zum Ändern den Betrag bearbeiten."); return; }
   t.result = t.result === r ? null : r; t.updatedAt = Date.now();
   var res = recalcBonuses(); save(); render(); tradeDetail(id);
   bonusToast(res, t.result ? "Ergebnis: " + RES[t.result] : "Ergebnis entfernt");
@@ -819,7 +944,7 @@ function awardDetail(key){
   var b = bonusById(a.bonusId), tr = tradeById(a.triggerId) || noTradeById(a.triggerId);
   var h = top("Bonus erreicht");
   h += '<div class="dsum"><b class="pos">' + signed(a.amount) + '</b><span class="muted small">' + fmtDate(a.ts) + '</span></div>';
-  h += '<div class="card"><b>' + esc(a.name) + '</b><div class="muted small" style="margin-top:4px">' + a.count + ' ' + esc(BTYPES[a.type].short) + ' erreicht (Ziel: alle ' + a.n + ')</div></div>';
+  h += '<div class="card"><b>' + esc(a.name) + '</b><div class="muted small" style="margin-top:4px">' + (isPer(a.type) ? awardSub(a) + ' · gebucht nach Ende des Zeitraums' : a.count + ' ' + esc(BTYPES[a.type].short) + ' erreicht (Ziel: alle ' + a.n + ')') + '</div></div>';
   h += '<p class="note">' + (a.frozen ? 'Diese Bonus-Regel ist inaktiv oder gelöscht. Der Bonus bleibt eingefroren im Konto.' : 'Wird automatisch berechnet: Bearbeitest oder löschst du Einträge, wird der Bonus angepasst oder entfernt.') + '</p>';
   h += '<div class="actions">' + (a.frozen ? '<button class="btn danger" data-action="del-award">' + uic("trash") + ' Löschen</button>' : '') + (tr ? '<button class="btn" data-action="award-src">Auslöser ansehen</button>' : '') + (b ? '<button class="btn" data-action="award-rule">Bonus-Regel</button>' : '') + '<span class="grow"></span><button class="btn primary" data-action="close">Schließen</button></div>';
   openSheet(h);
@@ -839,17 +964,23 @@ function readBonusForm(){
   if(a) M.d.name = a.value; if(n) M.d.n = Math.round(num(n.value, M.d.n, 1, 1000)); if(m) M.d.amount = num(m.value, M.d.amount, 0, 10000000);
   if(s && s.value && s.value !== dayKey(M.d.since)){ var v = fromDayKey(s.value); if(v != null) M.d.since = v; }
   if(c) M.d.active = c.checked;
+  var nt = $("#f-bntok"); if(nt) M.d.ntok = nt.checked;
 }
 function bonusAuto(){ if(M.auto) M.d.name = autoName(M.d.type, M.d.n); }
-function bonusPrev(d){ return 'Bonus <b class="pos">+' + eur(d.amount) + '</b> bei ' + d.n + ', ' + (2 * d.n) + ', ' + (3 * d.n) + ' … ' + esc(BTYPES[d.type].short); }
+function bonusPrev(d){
+  if(isPer(d.type)){ var T = BTYPES[d.type], one = T.per === "w" ? "Woche" : "Monat";
+    return d.n === 1 ? 'Bonus <b class="pos">+' + eur(d.amount) + '</b> für jede' + (T.per === "w" ? '' : 'n') + ' ' + esc(T.label.replace(/^(Woche|Monat)/, one)) + ', gebucht nach ' + (T.per === "w" ? 'Sonntag' : 'Monatsende')
+      : 'Bonus <b class="pos">+' + eur(d.amount) + '</b> nach ' + d.n + ', ' + (2 * d.n) + ', ' + (3 * d.n) + ' … ' + esc(T.short) + ' in Folge'; }
+  return 'Bonus <b class="pos">+' + eur(d.amount) + '</b> bei ' + d.n + ', ' + (2 * d.n) + ', ' + (3 * d.n) + ' … ' + esc(BTYPES[d.type].short); }
 function drawBonusSheet(){
   var d = M.d, edit = !!M.id;
   var h = top(edit ? "Bonus bearbeiten" : "Neuer Bonus");
   h += '<label class="lab">Wofür?</label><div class="btypes">' + BORDER.map(function(k){ return '<button data-btype="' + k + '" class="' + (k === d.type ? "on" : "") + '">' + BTYPES[k].label + '</button>'; }).join("") + '</div>';
   h += '<p class="note">' + BTYPES[d.type].hint + '</p>';
-  h += '<div class="two"><div><label class="lab" for="f-n">Anzahl N (' + BTYPES[d.type].unit + ')</label><div class="stepper"><button data-action="n-dec" aria-label="weniger">' + uic("minus") + '</button><input id="f-n" type="number" inputmode="numeric" min="1" step="1" value="' + d.n + '"><button data-action="n-inc" aria-label="mehr">' + uic("plus") + '</button></div></div>' +
+  h += '<div class="two"><div><label class="lab" for="f-n">' + (isPer(d.type) ? 'In Folge N (' + BTYPES[d.type].unit + ')' : 'Anzahl N (' + BTYPES[d.type].unit + ')') + '</label><div class="stepper"><button data-action="n-dec" aria-label="weniger">' + uic("minus") + '</button><input id="f-n" type="number" inputmode="numeric" min="1" step="1" value="' + d.n + '"><button data-action="n-inc" aria-label="mehr">' + uic("plus") + '</button></div></div>' +
     '<div><label class="lab" for="f-bamt">Bonus (€)</label><div class="stepper ok"><button data-action="ba-dec" aria-label="weniger">' + uic("minus") + '</button><input id="f-bamt" type="number" inputmode="decimal" min="0" step="5" value="' + d.amount + '"><button data-action="ba-inc" aria-label="mehr">' + uic("plus") + '</button></div></div></div>';
   h += '<p class="note" id="f-bprev">' + bonusPrev(d) + '</p>';
+  if(isPer(d.type) && BTYPES[d.type].kind === "clean") h += '<label class="lab">Option</label><label class="switch"><input type="checkbox" id="f-bntok"' + (d.ntok ? " checked" : "") + '><span class="sw"></span><span>' + (BTYPES[d.type].per === "w" ? 'Wochen' : 'Monate') + ' ohne Trade zählen mit</span></label><p class="note">Nur wenn du darin mindestens einen Kein-Trade-Tag erfasst hast.</p>';
   h += '<label class="lab" for="f-bname">Name</label><input id="f-bname" class="inp" maxlength="120" value="' + esc(d.name) + '">';
   h += '<label class="lab" for="f-since">Zählt ab</label><input id="f-since" class="inp" type="date" value="' + dayKey(d.since || 0) + '">';
   h += '<p class="note">Nur Einträge ab diesem Datum zählen für diesen Bonus.</p>';
@@ -865,10 +996,10 @@ function saveBonus(){
     var b = bonusById(M.id);
     if(b.active && !d.active) freezeAwards(b.id);
     if(!b.active && d.active && d.since < Date.now() - 1000 && d.since === b.since) d.since = dayStart(Date.now());
-    ["name", "type", "n", "amount", "active", "since"].forEach(function(k){ b[k] = d[k]; }); msg = "Bonus gespeichert.";
+    ["name", "type", "n", "amount", "active", "since", "ntok"].forEach(function(k){ b[k] = d[k]; }); msg = "Bonus gespeichert.";
   } else {
     var mo = S.bonusRules.reduce(function(m, x){ return Math.max(m, x.order); }, 0);
-    S.bonusRules.push(normBonusRule({id:uid("x"), name:d.name, type:d.type, n:d.n, amount:d.amount, active:d.active, since:d.since, order:mo + 1}, 0)); msg = "Bonus angelegt.";
+    S.bonusRules.push(normBonusRule({id:uid("x"), name:d.name, type:d.type, n:d.n, amount:d.amount, active:d.active, since:d.since, ntok:d.ntok, order:mo + 1}, 0)); msg = "Bonus angelegt.";
   }
   closeSheet(); UI.tab = "rules"; UI.rsub = "bonus"; saveUI(); commit(msg);
 }
@@ -1094,6 +1225,7 @@ function act(a, el){
     case "save-trade": saveTrade(); break;
     case "del-trade": deleteTrade(M.id); break;
     case "edit-trade": tradeSheet(M.id); break;
+    case "pnl-sign": { var pi = $("#f-pnl"); if(pi){ var pv = pi.value.trim().replace(/^[−–]/, "-"); pi.value = pv.charAt(0) === "-" ? pv.slice(1) : "-" + pv.replace(/^\+/, ""); readTradeForm(); updateTradeUI(); } } break;
     case "new-booking": bookingSheet(null); break;
     case "save-booking": saveBooking(); break;
     case "del-booking": deleteBooking(); break;
@@ -1111,10 +1243,10 @@ function bind(){
     var tab = t.closest("[data-tab]"); if(tab){ UI.tab = tab.getAttribute("data-tab"); saveUI(); render(); window.scrollTo(0, 0); return; }
     if(M && M.type === "trade"){
       var an = t.closest("[data-ans]"); if(an){ var av = an.getAttribute("data-v"); answer(+an.getAttribute("data-ans"), av === "1" ? true : av === "0" ? false : "na"); return; }
-      var rs = t.closest("[data-res]"); if(rs){ readTradeForm(); var rv = rs.getAttribute("data-res"); M.d.result = M.d.result === rv ? null : rv; updateTradeUI(); return; }
+      var rs = t.closest("[data-res]"); if(rs){ readTradeForm(); var rv = rs.getAttribute("data-res"); if(M.d.pnl != null){ if(rv !== M.d.result) toast("Ergebnis folgt dem G/V-Betrag (" + signed(M.d.pnl) + ")."); updateTradeUI(); return; } M.d.result = M.d.result === rv ? null : rv; updateTradeUI(); return; }
     }
     if(M && M.type === "detail"){ var dr = t.closest("[data-dres]"); if(dr){ setResult(M.id, dr.getAttribute("data-dres")); return; } }
-    if(M && M.type === "bonus"){ var bt = t.closest("[data-btype]"); if(bt){ readBonusForm(); M.d.type = bt.getAttribute("data-btype"); bonusAuto(); drawBonusSheet(); return; } }
+    if(M && M.type === "bonus"){ var bt = t.closest("[data-btype]"); if(bt){ readBonusForm(); var was = isPer(M.d.type); M.d.type = bt.getAttribute("data-btype"); if(was !== isPer(M.d.type)) M.d.n = isPer(M.d.type) ? 1 : 3; bonusAuto(); drawBonusSheet(); return; } }
     var rsb = t.closest("[data-rsub]"); if(rsb){ UI.rsub = rsb.getAttribute("data-rsub"); saveUI(); render(); return; }
     if(M && M.type === "rule"){ var c = t.closest("[data-cat]"); if(c){ readRuleForm(); M.d.cat = c.getAttribute("data-cat"); drawRuleSheet(); return; } }
     if(M && M.type === "booking"){ var sg = t.closest("[data-sign]"); if(sg){ readBookingForm(); M.d.sign = +sg.getAttribute("data-sign"); drawBookingSheet(); return; } }
@@ -1137,6 +1269,7 @@ function bind(){
   });
   document.addEventListener("input", function(e){
     var t = e.target;
+    if(t.id === "f-pnl" && M && M.type === "trade"){ readTradeForm(); updateTradeUI(); return; }
     if((t.id === "f-plus" || t.id === "f-minus") && M && M.type === "rule"){ readRuleForm(); var pv = $("#f-prev"); if(pv) pv.innerHTML = rulePrev(M.d); }
     if(M && M.type === "bonus" && (t.id === "f-n" || t.id === "f-bamt" || t.id === "f-bname")){
       if(t.id === "f-bname") M.auto = false;
@@ -1171,8 +1304,17 @@ function pwa(){
   if("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").then(function(r){ r.update && r.update(); }, function(){});
 }
 
-function init(){ load(); bind(); render(); pwa(); }
-window.__app = {state:function(){ return JSON.parse(JSON.stringify(S)); }, balance:balance, progress:function(){ return bonusRules(true).map(function(b){ var p = bonusProgress(b); p.name = b.name; return p; }); }, streaks:streaks, ranking:ranking, quote:function(){ return ruleQuote(S.trades); }, exportPayload:exportPayload, importData:importData, reload:function(){ load(); render(); }};
+function periodCheck(){
+  if(!S || M || DRAG) return;
+  var r = recalcBonuses(); if(!r.added.length && !r.removed.length) return;
+  save(); render(); bonusToast(r, null);
+}
+function init(){ load(); bind(); render(); pwa();
+  if(LOADR && (LOADR.added.length || LOADR.removed.length)) bonusToast(LOADR, null);
+  document.addEventListener("visibilitychange", function(){ if(document.visibilityState === "visible") periodCheck(); });
+  setInterval(periodCheck, 60000);
+}
+window.__app = {state:function(){ return JSON.parse(JSON.stringify(S)); }, balance:balance, progress:function(){ return bonusRules(true).map(function(b){ var p = bonusProgress(b); p.name = b.name; return p; }); }, streaks:streaks, ranking:ranking, quote:function(){ return ruleQuote(S.trades); }, exportPayload:exportPayload, importData:importData, reload:function(){ load(); render(); }, periodCheck:periodCheck, parsePnl:parsePnl, perKey:perKey};
 if(document.readyState === "loading") document.addEventListener("DOMContentLoaded", init); else init();
 })();
 
