@@ -228,6 +228,14 @@ html[data-theme="light"]{--gold:#d97706;--goldbg:rgba(217,119,6,.12);--ntc:#7c3a
 .pnlrow .cur{color:var(--muted);font-weight:600;padding:0 4px}
 .note.neg{color:var(--bad)}
 .pnlv{display:flex;align-items:baseline;gap:10px;margin:8px 0 2px}.pnlv b{font-size:17px;font-variant-numeric:tabular-nums}
+.rstat{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.rstat .rs{min-width:0}.rstat .rs+.rs{border-left:1px solid var(--line);padding-left:10px}
+.rstat small{display:block;color:var(--faint);font-size:11.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rstat b{display:block;font-size:22px;font-weight:700;margin-top:2px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.rstat em{display:block;font-style:normal;font-size:11.5px;color:var(--muted);white-space:nowrap;font-variant-numeric:tabular-nums}
+.rsh{font-size:11.5px;font-weight:600;color:var(--faint)}
+.pnlv .rr{font-size:15px}.pnlv.rk2{margin-top:2px}
+.trow .rr{font-weight:700}
 .gv{font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}.gv.pos{color:var(--ok)}.gv.neg{color:var(--bad)}
 .bon .bar.dim{opacity:.35}
 .bon.per .bc .nw{white-space:nowrap}
@@ -273,7 +281,7 @@ html[data-theme="light"]{--gold:#d97706;--goldbg:rgba(217,119,6,.12);--ntc:#7c3a
 var KEY = "regelkonto";
 var UIKEY = "regelkonto-ui";
 var SCHEMA = 3;
-var VERSION = "2.1";
+var VERSION = "2.2";
 var CATS = ["Vor dem Trade", "Im Trade", "Nach dem Trade", "Allgemein"];
 var WDS = ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"];
 
@@ -348,6 +356,29 @@ function parsePnl(v){
   if(!/^[+-]?(\d+(\.\d*)?|\.\d+)$/.test(s)) return NaN;
   var n = parseFloat(s); return isFinite(n) && Math.abs(n) <= 1e9 ? r2(n) : NaN;
 }
+/* Risiko (ab v2.2): geplanter Verlust in €, wenn der Stop greift. Leer = null, sonst > 0. NaN = ungültig */
+function parseRisk(v){
+  if(v == null || v === "") return null;
+  var n = parsePnl(v); if(n == null) return null;
+  return n === n && n > 0 ? n : NaN;
+}
+function rMult(t){ return t && t.pnl != null && t.risk != null && t.risk > 0 ? t.pnl / t.risk : null; }
+var NF1 = new Intl.NumberFormat("de-DE", {minimumFractionDigits:1, maximumFractionDigits:1});
+function r1(v){ return (v < 0 ? -1 : 1) * Math.round(Math.abs(v) * 10 + 1e-9) / 10; }
+function fmtR(v){ if(v == null) return ""; var x = r1(v); if(x === 0) x = 0; return (x > 0 ? "+" : x < 0 ? "−" : "") + NF1.format(Math.abs(x)) + "R"; }
+function rCls(v){ return v == null ? "" : cls(r1(v)); }
+/* R-Kennzahlen für Trades im Zeitraum [st, nx) */
+function rStats(trades, st, nx){
+  var o = {n:0, sumR:0, avgR:null, nRisk:0, avgRisk:null}, rs = 0;
+  trades.forEach(function(t){
+    if(st != null && (t.ts < st || t.ts >= nx)) return;
+    if(t.risk != null){ o.nRisk++; rs += t.risk; }
+    var r = rMult(t); if(r != null){ o.n++; o.sumR += r; }
+  });
+  if(o.n) o.avgR = o.sumR / o.n; o.sumR = o.n ? o.sumR : null;
+  if(o.nRisk) o.avgRisk = r2(rs / o.nRisk);
+  return o;
+}
 function resOfPnl(v){ return v > 0 ? "win" : v < 0 ? "loss" : "be"; }
 var RES = {win:"Gewinn", loss:"Verlust", be:"Break-even"};
 function dayKey(ts){ var d = new Date(ts); return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate()); }
@@ -384,7 +415,8 @@ function normRule(r, i){
 function normTrade(t){
   var items = (Array.isArray(t.items) ? t.items : []).map(function(x){ return {ruleId:String(x.ruleId || ""), title:String(x.title || ""), cat:CATS.indexOf(x.cat) >= 0 ? x.cat : "Allgemein", plus:num(x.plus, 0, 0, 100000), minus:num(x.minus, 0, 0, 100000), ok:x.ok === true ? true : x.ok === false ? false : x.ok === "na" ? "na" : null}; });
   var pnl = parsePnl(t.pnl); if(pnl !== pnl) pnl = null;
-  var o = {id:String(t.id || uid("t")), ts:+t.ts || Date.now(), instrument:String(t.instrument || "").slice(0, 60), note:String(t.note || "").slice(0, 2000), items:items, result:RES[t.result] ? t.result : null, pnl:pnl, updatedAt:+t.updatedAt || Date.now()};
+  var risk = parseRisk(t.risk); if(risk !== risk) risk = null;
+  var o = {id:String(t.id || uid("t")), ts:+t.ts || Date.now(), instrument:String(t.instrument || "").slice(0, 60), note:String(t.note || "").slice(0, 2000), items:items, result:RES[t.result] ? t.result : null, pnl:pnl, risk:risk, updatedAt:+t.updatedAt || Date.now()};
   if(pnl != null) o.result = resOfPnl(pnl); /* Betrag gewinnt bei Widerspruch */
   o.total = tradeTotal(o); return o;
 }
@@ -584,6 +616,7 @@ function ovHTML(){
     '<div class="kpi"><small>Regel-Quote</small><b id="quote">' + pct(q) + '</b><span class="bar"><i style="width:' + Math.round((q || 0) * 100) + '%"></i></span><em>gesamt</em></div>' +
     '<div class="kpi"><small>Letzte 10</small><b id="quote10">' + pct(q10) + '</b><span class="bar"><i style="width:' + Math.round((q10 || 0) * 100) + '%"></i></span><em>' + Math.min(10, ts.length) + ' Trades</em></div>' +
     '<div class="kpi"><small>Serie</small><b id="streak">' + uic("flame") + st.cur + '</b><em>ohne Regelbruch</em><em>Rekord ' + st.best + '</em></div></div>';
+  h += riskCardHTML();
   h += bonusProgressHTML();
   h += '<div class="card span"><div class="ctitle">Kontostand-Verlauf</div>' + chartHTML() + '</div>';
   var rk = ranking().filter(function(r){ return r.b > 0; }).slice(0, 8);
@@ -596,12 +629,24 @@ function ovHTML(){
   h += '<p class="hint">Virtuelles Konto, kein echtes Geld. Eingehaltene Regeln schreiben gut, gebrochene buchen ab, „nicht anwendbar“ zählt 0 €.</p></div>';
   return h;
 }
+function riskCardHTML(){
+  if(!S.trades.some(function(t){ return t.risk != null; })) return '';
+  var now = Date.now(), ws = perStart(now, "w"), ms = perStart(now, "m");
+  function col(lab, st, nx){
+    var o = rStats(S.trades, st, nx);
+    return '<div class="rs"><small>' + lab + '</small><b class="' + rCls(o.sumR) + '">' + (o.sumR != null ? fmtR(o.sumR) : '–') + '</b>' +
+      '<em>Ø ' + (o.avgR != null ? '<span class="' + rCls(o.avgR) + '">' + fmtR(o.avgR) + '</span> / Trade' : '–') + (o.n ? ' · ' + o.n + (o.n === 1 ? ' Trade' : ' Trades') : '') + '</em>' +
+      '<em>Ø Risiko ' + (o.avgRisk != null ? eur(o.avgRisk) : '–') + '</em></div>';
+  }
+  return '<div class="card span" id="rcard"><div class="ctitle">Ergebnis in R<span class="grow"></span><span class="muted rsh">G/V ÷ Risiko</span></div><div class="rstat">' +
+    col('Woche · KW ' + isoWeek(ws).w, ws, perNext(ws, "w")) + col('Monat · ' + MONS[new Date(ms).getMonth()], ms, perNext(ms, "m")) + '</div></div>';
+}
 function resPill(r){ return r ? '<span class="pill ' + r + '">' + RES[r] + '</span>' : ''; }
 function tradeRowHTML(t){
   var br = brokenOf(t), open = t.items.filter(function(x){ return x.ok == null; }).length, na = t.items.filter(function(x){ return x.ok === "na"; }).length;
   var kept = t.items.length - na - open;
   var sub = (br.length ? '<span class="brk">' + br.length + ' gebrochen: ' + esc(br.map(function(x){ return x.title; }).join(", ")) + '</span>' : '<span class="okt">' + (na ? kept + ' von ' + kept + ' eingehalten' : 'Alle ' + t.items.length + ' Regeln eingehalten') + '</span>');
-  return '<button class="trow" data-trade="' + esc(t.id) + '"><span class="badge ' + (br.length ? "bad" : "ok") + '">' + uic(br.length ? "x" : "check") + '</span><span class="ht"><b>' + fmtTime(t.ts) + (t.instrument ? ' <span class="dot">·</span> ' + esc(t.instrument) : '') + resPill(t.result) + '</b><small>' + (t.pnl != null ? '<span class="gv ' + cls(t.pnl) + '">G/V ' + signed(t.pnl) + '</span> · ' : '') + sub + (na ? ' · ' + na + ' n. a.' : '') + (open ? ' · ' + open + ' offen' : '') + '</small></span><span class="v ' + cls(t.total) + '">' + signed(t.total) + '</span></button>';
+  return '<button class="trow" data-trade="' + esc(t.id) + '"><span class="badge ' + (br.length ? "bad" : "ok") + '">' + uic(br.length ? "x" : "check") + '</span><span class="ht"><b>' + fmtTime(t.ts) + (t.instrument ? ' <span class="dot">·</span> ' + esc(t.instrument) : '') + resPill(t.result) + '</b><small>' + (t.pnl != null ? '<span class="gv ' + cls(t.pnl) + '">G/V ' + signed(t.pnl) + (rMult(t) != null ? ' <span class="rr">' + fmtR(rMult(t)) + '</span>' : '') + '</span> · ' : '') + sub + (na ? ' · ' + na + ' n. a.' : '') + (open ? ' · ' + open + ' offen' : '') + '</small></span><span class="v ' + cls(t.total) + '">' + signed(t.total) + '</span></button>';
 }
 function noTradeRowHTML(n){
   return '<button class="trow" data-nt="' + esc(n.id) + '"><span class="badge nt">' + uic("moon") + '</span><span class="ht"><b>Kein Trade</b><small>' + esc(n.note || "Tag ohne Trade") + '</small></span><span class="v ' + cls(n.amount) + '">' + signed(n.amount) + '</span></button>';
@@ -777,7 +822,7 @@ function toggleRule(id, on){ var r = ruleById(id); if(!r) return; r.active = on;
 function tradeSheet(id){
   var t = id ? tradeById(id) : null;
   if(!t && !rules(true).length){ toast("Lege zuerst mindestens eine aktive Regel an."); UI.tab = "rules"; saveUI(); render(); return; }
-  M = {type:"trade", pnlBad:false, id:t ? t.id : null, d:t ? JSON.parse(JSON.stringify(t)) : {ts:Date.now(), instrument:"", note:"", result:null, pnl:null, items:rules(true).map(function(r){ return {ruleId:r.id, title:r.title, cat:r.cat, plus:r.plus, minus:r.minus, ok:null}; })}};
+  M = {type:"trade", pnlBad:false, riskBad:false, id:t ? t.id : null, d:t ? JSON.parse(JSON.stringify(t)) : {ts:Date.now(), instrument:"", note:"", result:null, pnl:null, risk:null, items:rules(true).map(function(r){ return {ruleId:r.id, title:r.title, cat:r.cat, plus:r.plus, minus:r.minus, ok:null}; })}};
   drawTradeSheet();
 }
 function readTradeForm(){
@@ -787,6 +832,8 @@ function readTradeForm(){
   if(b) M.d.instrument = b.value.trim(); if(c) M.d.note = c.value;
   var g = $("#f-pnl");
   if(g){ var v = parsePnl(g.value); M.pnlBad = v !== v; M.d.pnl = M.pnlBad ? null : v; if(M.d.pnl != null) M.d.result = resOfPnl(M.d.pnl); }
+  var rk = $("#f-risk");
+  if(rk){ var w = parseRisk(rk.value.trim()); M.riskBad = w !== w; M.d.risk = M.riskBad ? null : w; }
 }
 function pnlInput(v){ return v == null ? "" : String(v).replace(".", ","); }
 function drawTradeSheet(){
@@ -798,6 +845,9 @@ function drawTradeSheet(){
   h += '<label class="lab" for="f-pnl">G/V in € <span class="muted">(optional, echter Gewinn/Verlust)</span></label>' +
     '<div class="pnlrow"><button class="pm" data-action="pnl-sign" aria-label="Vorzeichen wechseln" title="Vorzeichen wechseln">±</button><input id="f-pnl" class="inp" type="text" inputmode="decimal" autocomplete="off" enterkeyhint="done" maxlength="16" placeholder="z. B. 120,50 oder -80" value="' + esc(pnlInput(d.pnl)) + '"><span class="cur">€</span></div>' +
     '<p class="note" id="f-pnlhint"></p>';
+  h += '<label class="lab" for="f-risk">Risiko in € <span class="muted">(optional, Verlust beim Stop)</span></label>' +
+    '<div class="pnlrow"><input id="f-risk" class="inp" type="text" inputmode="decimal" autocomplete="off" enterkeyhint="done" maxlength="16" placeholder="z. B. 100 oder 87,50" value="' + esc(pnlInput(d.risk)) + '"><span class="cur">€</span></div>' +
+    '<p class="note" id="f-riskhint"></p>';
   h += '<label class="lab">Ergebnis <span class="muted">(optional, für Gewinn-Serien)</span></label>' + resSegHTML(d.result, "data-res");
   h += '<div class="allbar"><b class="grow">' + d.items.length + ' Regeln bewerten</b><button class="btn sm" data-action="all-ok" id="f-allok">' + uic("check") + ' Alle eingehalten</button></div>';
   var cats = CATS.filter(function(c){ return d.items.some(function(x){ return x.cat === c; }); });
@@ -830,16 +880,20 @@ function updateTradeUI(){
   var tot = tradeTotal(d), br = d.items.filter(function(x){ return x.ok === false; }).length;
   var t = $("#f-total"); t.textContent = signed(tot); t.className = cls(tot);
   $("#f-open").textContent = open ? open + " von " + d.items.length + " noch offen" : (br ? br + " gebrochen" : "Alles eingehalten") + (na ? " · " + na + " n.\u202fa." : "") + " · Saldo";
-  var s = $("#f-save"); s.disabled = open > 0 || M.pnlBad; s.textContent = M.id ? "Speichern" : "Buchen";
+  var s = $("#f-save"); s.disabled = open > 0 || M.pnlBad || M.riskBad; s.textContent = M.id ? "Speichern" : "Buchen";
   var ph = $("#f-pnlhint"), pi = $("#f-pnl");
   if(ph){ ph.className = "note" + (M.pnlBad ? " neg" : ""); ph.textContent = M.pnlBad ? "Ungültiger Betrag. Erlaubt: 120,50 oder -80" : d.pnl != null ? "Ergebnis aus Betrag: " + RES[d.result] + (d.pnl ? " (" + signed(d.pnl) + ")" : "") : "Mit Betrag zählt der Trade für „Woche/Monat im Plus“."; }
   if(pi) pi.classList.toggle("bad", !!M.pnlBad);
+  var rh = $("#f-riskhint"), ri = $("#f-risk"), rm = rMult(d);
+  if(rh){ rh.className = "note" + (M.riskBad ? " neg" : ""); rh.innerHTML = M.riskBad ? "Risiko muss größer als 0 € sein, z. B. 100 oder 87,50" : rm != null ? 'Ergebnis in R: <b class="' + rCls(rm) + '">' + fmtR(rm) + '</b> (' + signed(d.pnl) + ' ÷ ' + eur(d.risk) + ')' : d.risk != null ? "Mit G/V-Betrag zeigt die App das Ergebnis in R." : "Geplantes Risiko: so viel verlierst du, wenn der Stop greift."; }
+  if(ri) ri.classList.toggle("bad", !!M.riskBad);
 }
 function answer(i, v){ readTradeForm(); var x = M.d.items[i]; if(!x) return; x.ok = x.ok === v ? null : v; updateTradeUI();
   if(navigator.vibrate){ try { navigator.vibrate(8); } catch(e) {} } }
 function saveTrade(){
   readTradeForm(); var d = M.d;
   if(M.pnlBad){ toast("G/V-Betrag ungültig. Beispiel: 120,50 oder -80"); var pf = $("#f-pnl"); if(pf) pf.focus(); return; }
+  if(M.riskBad){ toast("Risiko ungültig. Es muss größer als 0 € sein, z. B. 100"); var rf = $("#f-risk"); if(rf) rf.focus(); return; }
   var open = d.items.filter(function(x){ return x.ok == null; }).length;
   if(open){ toast("Bitte bewerte noch " + open + (open === 1 ? " Regel." : " Regeln.")); var f = document.querySelector(".rq:not(.ok):not(.bad):not(.na)"); if(f) f.scrollIntoView({behavior:"smooth", block:"center"}); return; }
   d.updatedAt = Date.now();
@@ -868,7 +922,8 @@ function tradeDetail(id){
   var h = top("Trade vom " + fmtDate(t.ts));
   h += '<div class="muted small">' + fmtTime(t.ts) + ' Uhr' + (t.instrument ? ' · ' + esc(t.instrument) : '') + '</div>';
   h += '<div class="dsum"><b class="' + cls(t.total) + '">' + signed(t.total) + '</b><span class="muted small">' + kept + ' eingehalten · ' + br + ' gebrochen' + (na ? ' · ' + na + ' nicht anwendbar' : '') + '</span></div>';
-  h += '<div class="pnlv"><span class="muted small">G/V</span>' + (t.pnl != null ? '<b class="' + cls(t.pnl) + '" id="d-pnl">' + signed(t.pnl) + '</b>' : '<span class="muted small" id="d-pnl">kein Betrag erfasst</span>') + '<span class="grow"></span><button class="lnk" data-action="edit-trade">' + (t.pnl != null ? 'ändern' : 'eintragen') + '</button></div>';
+  h += '<div class="pnlv"><span class="muted small">G/V</span>' + (t.pnl != null ? '<b class="' + cls(t.pnl) + '" id="d-pnl">' + signed(t.pnl) + '</b>' : '<span class="muted small" id="d-pnl">kein Betrag erfasst</span>') + (rMult(t) != null ? '<b class="rr ' + rCls(rMult(t)) + '" id="d-r">' + fmtR(rMult(t)) + '</b>' : '') + '<span class="grow"></span><button class="lnk" data-action="edit-trade">' + (t.pnl != null ? 'ändern' : 'eintragen') + '</button></div>';
+  h += '<div class="pnlv rk2"><span class="muted small">Risiko</span>' + (t.risk != null ? '<b id="d-risk">' + eur(t.risk) + '</b>' : '<span class="muted small" id="d-risk">kein Risiko erfasst</span>') + '<span class="grow"></span><button class="lnk" data-action="edit-trade">' + (t.risk != null ? 'ändern' : 'eintragen') + '</button></div>';
   h += '<label class="lab">Ergebnis' + (t.pnl != null ? ' <span class="muted">(aus G/V)</span>' : '') + '</label>' + resSegHTML(t.result, "data-dres");
   h += '<div class="card" style="padding:4px 12px">' + t.items.map(function(x){
     var v = x.ok === true ? x.plus : x.ok === false ? -x.minus : 0;
@@ -1269,7 +1324,7 @@ function bind(){
   });
   document.addEventListener("input", function(e){
     var t = e.target;
-    if(t.id === "f-pnl" && M && M.type === "trade"){ readTradeForm(); updateTradeUI(); return; }
+    if((t.id === "f-pnl" || t.id === "f-risk") && M && M.type === "trade"){ readTradeForm(); updateTradeUI(); return; }
     if((t.id === "f-plus" || t.id === "f-minus") && M && M.type === "rule"){ readRuleForm(); var pv = $("#f-prev"); if(pv) pv.innerHTML = rulePrev(M.d); }
     if(M && M.type === "bonus" && (t.id === "f-n" || t.id === "f-bamt" || t.id === "f-bname")){
       if(t.id === "f-bname") M.auto = false;
@@ -1314,7 +1369,7 @@ function init(){ load(); bind(); render(); pwa();
   document.addEventListener("visibilitychange", function(){ if(document.visibilityState === "visible") periodCheck(); });
   setInterval(periodCheck, 60000);
 }
-window.__app = {state:function(){ return JSON.parse(JSON.stringify(S)); }, balance:balance, progress:function(){ return bonusRules(true).map(function(b){ var p = bonusProgress(b); p.name = b.name; return p; }); }, streaks:streaks, ranking:ranking, quote:function(){ return ruleQuote(S.trades); }, exportPayload:exportPayload, importData:importData, reload:function(){ load(); render(); }, periodCheck:periodCheck, parsePnl:parsePnl, perKey:perKey};
+window.__app = {state:function(){ return JSON.parse(JSON.stringify(S)); }, balance:balance, progress:function(){ return bonusRules(true).map(function(b){ var p = bonusProgress(b); p.name = b.name; return p; }); }, streaks:streaks, ranking:ranking, quote:function(){ return ruleQuote(S.trades); }, exportPayload:exportPayload, importData:importData, reload:function(){ load(); render(); }, periodCheck:periodCheck, parsePnl:parsePnl, perKey:perKey, parseRisk:parseRisk, rMult:rMult, fmtR:fmtR, rStats:function(st, nx){ return rStats(S.trades, st, nx); }, normTrade:normTrade, migrate:migrate};
 if(document.readyState === "loading") document.addEventListener("DOMContentLoaded", init); else init();
 })();
 

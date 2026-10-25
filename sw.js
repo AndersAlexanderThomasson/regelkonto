@@ -1,5 +1,5 @@
 /* Service Worker: offline nutzbar, Updates kommen automatisch (zuerst Netz, sonst Cache) */
-var CACHE = "regelkonto-v2-f76c8a4cab";
+var CACHE = "regelkonto-v2-5ff9db216b";
 var FILES = ["./", "index.html", "manifest.json", "icon-192.png", "icon-512.png", "icon-maskable-512.png"];
 self.addEventListener("install", function(e){
   e.waitUntil(caches.open(CACHE).then(function(c){ return c.addAll(FILES); }).then(function(){ return self.skipWaiting(); }));
