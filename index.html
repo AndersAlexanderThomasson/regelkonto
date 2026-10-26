@@ -307,7 +307,7 @@ html[data-theme="light"]{--gold:#d97706;--goldbg:rgba(217,119,6,.12);--ntc:#7c3a
 var KEY = "regelkonto";
 var UIKEY = "regelkonto-ui";
 var SCHEMA = 3;
-var VERSION = "2.5";
+var VERSION = "2.5.1";
 var CATS = ["Vor dem Trade", "Im Trade", "Nach dem Trade", "Allgemein"];
 var WDS = ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"];
 
@@ -363,6 +363,9 @@ BTYPES.wclean = {per:"w", kind:"clean", label:"Woche ohne Regelbruch", short:"Wo
 BTYPES.mplus = {per:"m", kind:"plus", label:"Monat im Plus", short:"Monate im Plus", unit:"Monate", hint:"Summe der G/V-Beträge im Kalendermonat größer 0 €. Trades ohne Betrag zählen nicht (ab v2.5 erfasst die App keinen G/V mehr, neue Trades zählen hier also nicht). Monate ohne Trade mit Betrag zählen nicht und unterbrechen keine Serie." + PHINT};
 BTYPES.mclean = {per:"m", kind:"clean", label:"Monat ohne Regelbruch", short:"Monate ohne Regelbruch", unit:"Monate", hint:"Mindestens ein Trade im Kalendermonat und kein „Gebrochen“. Monate ohne Trade zählen nur, wenn die Option unten an ist und du darin einen Kein-Trade-Tag erfasst hast; sonst unterbrechen sie die Serie nicht." + PHINT};
 var BORDER = ["clean", "win", "notrade", "cleantotal", "wplus", "wclean", "mplus", "mclean"];
+/* v2.5.1: Boni, die G/V brauchen, sind abgeschafft. Bestehende Regeln bleiben in den Daten, werden aber weder angezeigt noch berechnet; bereits gebuchte Gutschriften werden eingefroren (wie beim Deaktivieren) und bleiben im Saldo/Verlauf. */
+var GONE = {wplus:1, mplus:1};
+var BOFFER = BORDER.filter(function(k){ return !GONE[k]; });
 var MONS = ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"];
 function isPer(type){ return !!(BTYPES[type] && BTYPES[type].per); }
 /* Zeiträume in lokaler Zeit (Europe/Berlin): ISO-Wochen Mo–So, Kalendermonate */
@@ -499,7 +502,7 @@ function defBonus(since){
 /* Zeitraum-Boni (ab v2.1): zählen ab "since", es wird nichts rückwirkend gebucht */
 function defPeriod(since, order){
   var now = Date.now();
-  return [["wplus", 30], ["wclean", 50], ["mplus", 100], ["mclean", 200]].map(function(x, i){
+  return [["wclean", 50], ["mclean", 200]].map(function(x, i){
     return {id:uid("x") + "p" + i, name:BTYPES[x[0]].label, type:x[0], n:1, amount:x[1], active:true, order:order + i, since:since, ntok:false, createdAt:now}; });
 }
 function blank(){
@@ -563,20 +566,24 @@ function migrate(d){
   /* v1 → v2: Regeln, Trades und Buchungen bleiben unverändert. Vorbelegte Bonus-Regeln zählen erst ab jetzt, damit sich der Kontostand nicht ändert. */
   var nt = (Array.isArray(d.notrade) ? d.notrade : []).map(normNoTrade).filter(function(n){ if(days[n.day]) return false; days[n.day] = 1; return true; });
   var br = Array.isArray(d.bonusRules) ? d.bonusRules.map(normBonusRule) : defBonus(Date.now());
+  /* v2.5.1: Gutschriften abgeschaffter Boni (Woche/Monat im Plus) einfrieren → bleiben im Saldo, werden nicht neu berechnet */
+  var gone = {}; br.forEach(function(b){ if(GONE[b.type]) gone[b.id] = 1; });
+  var aw = (Array.isArray(d.awards) ? d.awards : []).map(normAward);
+  aw.forEach(function(a){ if(!a.frozen && (gone[a.bonusId] || GONE[a.type])){ a.frozen = true; MIGCHG = true; } });
   /* v2 → v3: vier Zeitraum-Boni anhängen (einmalig), bestehende Boni und Reihenfolge bleiben */
   if((+d.schema || 1) < 3 && !br.some(function(b){ return isPer(b.type); })) br = br.concat(defPeriod(Date.now(), br.reduce(function(m, b){ return Math.max(m, b.order); }, 0) + 1));
   return {schema:SCHEMA, settings:{start:num(st.start, 1000, -10000000, 10000000), defPlus:num(st.defPlus, 5, 0, 100000), defMinus:num(st.defMinus, 10, 0, 100000), noTrade:num(st.noTrade, 50, 0, 10000000), mult:okOrNull(parsePx(st.mult)) || 100},
     rules:d.rules.map(normRule), trades:d.trades.map(normTrade), bookings:(d.bookings || []).map(normBooking),
     notrade:nt, bonusRules:br,
-    awards:(Array.isArray(d.awards) ? d.awards : []).map(normAward),
+    awards:aw,
     /* v2.3: echtes Konto + Limits. Fehlen bei alten Daten → leer, ohne Schema-Wechsel */
     real:normReal(d.real), realBookings:(Array.isArray(d.realBookings) ? d.realBookings : []).map(normRealBooking).filter(function(b){ return b.amount != null; }), limits:normLimits(d.limits), meta:d.meta && typeof d.meta === "object" ? {lastExport:d.meta.lastExport || null, lastImport:d.meta.lastImport || null, created:d.meta.created || Date.now()} : {lastExport:null, lastImport:null, created:Date.now()}};
 }
-var LOADR = null;
+var LOADR = null, MIGCHG = false;
 function load(){
   var raw = null; try { raw = localStorage.getItem(KEY); } catch(e) {}
-  LOADR = null;
-  if(raw){ try { var old = JSON.parse(raw); S = migrate(old); LOADR = recalcBonuses(); if(+old.schema !== SCHEMA){ try { localStorage.setItem(KEY + "-v" + (old.schema || 1) + "-backup", raw); } catch(x) {} save(); } else if(LOADR.added.length || LOADR.removed.length) save(); } catch(e) { S = blank(); try { localStorage.setItem(KEY + "-defekt-" + Date.now(), raw); } catch(x) {} } }
+  LOADR = null; MIGCHG = false;
+  if(raw){ try { var old = JSON.parse(raw); S = migrate(old); LOADR = recalcBonuses(); if(+old.schema !== SCHEMA){ try { localStorage.setItem(KEY + "-v" + (old.schema || 1) + "-backup", raw); } catch(x) {} save(); } else if(MIGCHG || LOADR.added.length || LOADR.removed.length) save(); } catch(e) { S = blank(); try { localStorage.setItem(KEY + "-defekt-" + Date.now(), raw); } catch(x) {} } }
   else { S = blank(); save(); }
   try { var u = JSON.parse(localStorage.getItem(UIKEY) || "{}"); if(u.tab) UI.tab = u.tab; if(u.theme) UI.theme = u.theme; if(u.rsub) UI.rsub = u.rsub; } catch(e) {}
   if(["ov", "hist", "rules"].indexOf(UI.tab) < 0) UI.tab = "ov";
@@ -589,7 +596,7 @@ function tradeById(id){ for(var i = 0; i < S.trades.length; i++) if(S.trades[i].
 function noTradeById(id){ for(var i = 0; i < S.notrade.length; i++) if(S.notrade[i].id === id) return S.notrade[i]; return null; }
 function bonusById(id){ for(var i = 0; i < S.bonusRules.length; i++) if(S.bonusRules[i].id === id) return S.bonusRules[i]; return null; }
 function awardByKey(k){ for(var i = 0; i < S.awards.length; i++) if(S.awards[i].key === k) return S.awards[i]; return null; }
-function bonusRules(activeOnly){ return S.bonusRules.filter(function(b){ return !activeOnly || b.active; }).sort(function(a, b){ return a.order - b.order; }); }
+function bonusRules(activeOnly){ return S.bonusRules.filter(function(b){ return !GONE[b.type] && (!activeOnly || b.active); }).sort(function(a, b){ return a.order - b.order; }); }
 function bookingById(id){ for(var i = 0; i < S.bookings.length; i++) if(S.bookings[i].id === id) return S.bookings[i]; return null; }
 function tradeTotal(t){ return r2(t.items.reduce(function(s, x){ return s + (x.ok === true ? x.plus : x.ok === false ? -x.minus : 0); }, 0)); }
 function brokenOf(t){ return t.items.filter(function(x){ return x.ok === false; }); }
@@ -1168,7 +1175,7 @@ function bonusPrev(d){
 function drawBonusSheet(){
   var d = M.d, edit = !!M.id;
   var h = top(edit ? "Bonus bearbeiten" : "Neuer Bonus");
-  h += '<label class="lab">Wofür?</label><div class="btypes">' + BORDER.map(function(k){ return '<button data-btype="' + k + '" class="' + (k === d.type ? "on" : "") + '">' + BTYPES[k].label + '</button>'; }).join("") + '</div>';
+  h += '<label class="lab">Wofür?</label><div class="btypes">' + BOFFER.map(function(k){ return '<button data-btype="' + k + '" class="' + (k === d.type ? "on" : "") + '">' + BTYPES[k].label + '</button>'; }).join("") + '</div>';
   h += '<p class="note">' + BTYPES[d.type].hint + '</p>';
   h += '<div class="two"><div><label class="lab" for="f-n">' + (isPer(d.type) ? 'In Folge N (' + BTYPES[d.type].unit + ')' : 'Anzahl N (' + BTYPES[d.type].unit + ')') + '</label><div class="stepper"><button data-action="n-dec" aria-label="weniger">' + uic("minus") + '</button><input id="f-n" type="number" inputmode="numeric" min="1" step="1" value="' + d.n + '"><button data-action="n-inc" aria-label="mehr">' + uic("plus") + '</button></div></div>' +
     '<div><label class="lab" for="f-bamt">Bonus (€)</label><div class="stepper ok"><button data-action="ba-dec" aria-label="weniger">' + uic("minus") + '</button><input id="f-bamt" type="number" inputmode="decimal" min="0" step="5" value="' + d.amount + '"><button data-action="ba-inc" aria-label="mehr">' + uic("plus") + '</button></div></div></div>';
@@ -1262,7 +1269,7 @@ function settingsSheet(){
   h += '<h3>Darstellung</h3><div class="seg2"><button data-theme-set="dark" class="' + (UI.theme === "dark" ? "on" : "") + '">Dunkel</button><button data-theme-set="light" class="' + (UI.theme === "light" ? "on" : "") + '">Hell</button><button data-theme-set="system" class="' + (UI.theme === "system" ? "on" : "") + '">System</button></div>';
   h += '<h3>Sichern &amp; übertragen</h3><p class="note">Deine Daten liegen nur in diesem Browser. Exportiere regelmäßig ein Backup. Für ein anderes Gerät: dort die Datei importieren. Der Import ersetzt alle Daten auf dem Gerät.</p>';
   h += '<div class="stack"><button class="btn block" data-action="export">Export als Datei</button>' + (navigator.canShare ? '<button class="btn block" data-action="share">Teilen …</button>' : '') + '<button class="btn block" data-action="import">Datei importieren</button></div>';
-  h += '<p class="muted small">Zuletzt exportiert: ' + (S.meta.lastExport ? fmtTs(S.meta.lastExport) : "noch nie") + ' · importiert: ' + (S.meta.lastImport ? fmtTs(S.meta.lastImport) : "noch nie") + '<br>' + S.rules.length + ' Regeln · ' + S.trades.length + ' Trades · ' + S.notrade.length + ' Kein-Trade-Tage · ' + S.bonusRules.length + ' Bonus-Regeln · ' + S.awards.length + ' Boni · ' + S.bookings.length + ' Buchungen</p>';
+  h += '<p class="muted small">Zuletzt exportiert: ' + (S.meta.lastExport ? fmtTs(S.meta.lastExport) : "noch nie") + ' · importiert: ' + (S.meta.lastImport ? fmtTs(S.meta.lastImport) : "noch nie") + '<br>' + S.rules.length + ' Regeln · ' + S.trades.length + ' Trades · ' + S.notrade.length + ' Kein-Trade-Tage · ' + bonusRules().length + ' Bonus-Regeln · ' + S.awards.length + ' Boni · ' + S.bookings.length + ' Buchungen</p>';
   h += '<h3>Als App installieren</h3><p class="note">Android/Chrome: Menü ⋮ → „App installieren“ bzw. „Zum Startbildschirm hinzufügen“. iPhone/Safari: Teilen → „Zum Home-Bildschirm“.</p>';
   h += '<h3>Neu anfangen</h3><button class="btn block danger" data-action="reset">Alle Daten löschen</button>';
   h += '<p class="muted small">Version ' + VERSION + '</p><div class="actions"><span class="grow"></span><button class="btn primary" data-action="close">Fertig</button></div>';
